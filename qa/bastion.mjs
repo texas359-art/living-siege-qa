@@ -63,7 +63,7 @@ try{
  await page.mouse.wheel(0,-250);
  const seen=new Set();let damaged=false,died=false,previousHp=[250,250],last;
  const fightStart=Date.now();
- while(Date.now()-fightStart<240000){
+ while(Date.now()-fightStart<300000){
   last=await inspect();for(let i=0;i<last.actors.length;i++){const actor=last.actors[i];seen.add(actor.state);if(actor.hp!==null&&actor.hp<previousHp[i])damaged=true;if(actor.hp!==null)previousHp[i]=actor.hp;if(actor.state==='death')died=true;}
   if(last.finished)break;await page.waitForTimeout(100);
  }

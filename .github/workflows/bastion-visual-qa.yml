@@ -29,6 +29,13 @@ jobs:
           mkdir -p bastion-qa-results
           set -o pipefail
           npx playwright install --with-deps chromium 2>&1 | tee bastion-qa-results/chromium-install.log
+      - name: Install battle video encoder
+        shell: bash
+        run: |
+          set -o pipefail
+          sudo apt-get update 2>&1 | tee bastion-qa-results/ffmpeg-install.log
+          sudo apt-get install -y ffmpeg 2>&1 | tee -a bastion-qa-results/ffmpeg-install.log
+          ffmpeg -version
       - name: Render published Bastion and capture evidence
         shell: bash
         env:
