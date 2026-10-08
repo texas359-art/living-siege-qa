@@ -21,10 +21,14 @@ try{
  assert(!command.arguments.some(a=>a.startsWith('--disable-features=')),'Unexpected disabled browser features');
  context=await browser.newContext({viewport:{width:1100,height:900},deviceScaleFactor:1,recordVideo:{dir:path.join(output,'videos'),size:{width:1100,height:900}},bypassCSP:false,ignoreHTTPSErrors:false});
  page=await context.newPage();const videoStart=Date.now();
- await page.route('**/*',route=>{const url=new URL(route.request().url());return ['blob:','data:'].includes(url.protocol)||url.origin===new URL(target).origin?route.continue():route.abort('blockedbyclient');});
- const pageErrors=[];page.on('pageerror',error=>pageErrors.push(error.message));page.on('console',message=>{if(message.type()==='error')pageErrors.push(message.text());});
- const failedRequests=[];page.on('requestfailed',request=>failedRequests.push({url:request.url(),failure:request.failure()?.errorText}));
- const badResponses=[];page.on('response',response=>{if(response.status()>=400)badResponses.push({url:response.url(),status:response.status()});});
+ const pageErrors=[],failedRequests=[],badResponses=[];
+ const monitorPage=async p=>{
+  await p.route('**/*',route=>{const url=new URL(route.request().url());return ['blob:','data:'].includes(url.protocol)||url.origin===new URL(target).origin?route.continue():route.abort('blockedbyclient');});
+  p.on('pageerror',error=>pageErrors.push(error.message));p.on('console',message=>{if(message.type()==='error')pageErrors.push(message.text());});
+  p.on('requestfailed',request=>failedRequests.push({url:request.url(),failure:request.failure()?.errorText}));
+  p.on('response',response=>{if(response.status()>=400)badResponses.push({url:response.url(),status:response.status()});});
+ };
+ await monitorPage(page);
  const probe=await page.evaluate(()=>{const canvas=document.createElement('canvas'),gl=canvas.getContext('webgl2');if(!gl)return{webgl2:false};const debug=gl.getExtension('WEBGL_debug_renderer_info');const result={webgl2:true,version:gl.getParameter(gl.VERSION),renderer:gl.getParameter(debug?debug.UNMASKED_RENDERER_WEBGL:gl.RENDERER)};gl.getExtension('WEBGL_lose_context')?.loseContext();return result;});
  report.contextProbe=probe;assert(probe.webgl2,'WebGL2 unavailable. Do NOT retry with security-disabling flags.');assert(/swiftshader/i.test(probe.renderer),'SwiftShader renderer was requested but not actually selected.');
  const response=await page.goto(target,{waitUntil:'load',timeout:60000});assert.equal(response.status(),200);
@@ -80,12 +84,19 @@ try{
  assert(last.finished,'Real-time battle did not finish in 300s');assert(seen.has('walk'));assert(seen.has('attack'));assert(damaged);assert(died);assert(last.frames>0);assert.equal(last.errors.length,0);
  report.duel={seconds:last.elapsed,wallSeconds:(Date.now()-fightStart)/1000,videoStartSeconds:fightVideoStart,videoEndSeconds:(Date.now()-videoStart)/1000,seenStates:[...seen],damageObserved:damaged,deathObserved:died,finished:last.finished,softwareFps:last.fps};
  await page.screenshot({path:path.join(output,'desktop-diagnostics.png'),fullPage:true});
+ // Finalize the battle recording before any viewport change. Mobile QA uses
+ // a separate page so the MP4 can never end with resized UI/diagnostic panels.
+ const battleRecording=page.video();await page.close();await battleRecording.saveAs(path.join(output,'bastion-session.webm'));report.video='bastion-session.webm';
+ page=await context.newPage();await monitorPage(page);
  // Responsive QA only. Explicitly NOT Safari/iPhone performance certification.
- await page.setViewportSize({width:390,height:844});await page.getByRole('button',{name:'Idle',exact:true}).click();await page.waitForTimeout(300);
+ await page.setViewportSize({width:390,height:844});
+ const mobileResponse=await page.goto(target,{waitUntil:'load',timeout:60000});assert.equal(mobileResponse.status(),200);
+ await page.waitForFunction(()=>Boolean(window.__bastionTest),{},{timeout:60000});
+ await page.getByRole('button',{name:'Idle',exact:true}).click();await page.waitForTimeout(300);
  const mobile=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,buttons:[...document.querySelectorAll('nav button')].map(b=>({height:b.getBoundingClientRect().height,width:b.getBoundingClientRect().width})),diagnostics:document.querySelector('[data-testid="diagnostics"]')?.textContent}));
  assert(mobile.scrollWidth<=mobile.width);assert(mobile.buttons.every(b=>b.height>=44));assert(mobile.diagnostics.includes('WebGL 2'));await page.screenshot({path:path.join(output,'mobile-viewport.png'),fullPage:true});report.mobileViewport=mobile;
  assert.equal(pageErrors.length,0,JSON.stringify(pageErrors));assert.equal(failedRequests.length,0,JSON.stringify(failedRequests));assert.equal(badResponses.length,0,JSON.stringify(badResponses));report.tests.push('real-time duel: movement, attacks, HP decrease, death, finish','390×844 responsive layout','no JS / rendering / network errors');
  report.result='PASS';
- const video=page.video();await context.close();context=null;await video.saveAs(path.join(output,'bastion-session.webm'));report.video='bastion-session.webm';
+ await context.close();context=null;
 }catch(error){report.result='FAIL';report.errors.push(error.stack||String(error));if(page&&!page.isClosed())await page.screenshot({path:path.join(output,'failure-page.png'),fullPage:true}).catch(()=>{});process.exitCode=1;}
 finally{if(context){const video=page?.video();await context.close().catch(()=>{});if(video)await video.saveAs(path.join(output,'failed-session.webm')).catch(()=>{});}await browser?.close();report.finished=new Date().toISOString();await fs.writeFile(path.join(output,'report.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));}
