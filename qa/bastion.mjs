@@ -46,8 +46,18 @@ try{
   const filename=`${label}.png`;await canvas.screenshot({path:path.join(output,filename)});report.screenshots.push({state,file:filename,pixels});
  }
  assert(new Set(checksums).size>=4,'Animation states rendered identical images');
- await page.getByRole('button',{name:'Walk',exact:true}).click();const before=await inspect();await page.waitForTimeout(400);const after=await inspect();
- for(const joint of ['footl','footr','handl','handr'])assert.notDeepEqual(before.actors[0].joints[joint],after.actors[0].joints[joint],`Walk bone does not animate: ${joint}`);
+ await page.getByRole('button',{name:'Walk',exact:true}).click();
+ await page.waitForFunction(()=>window.__bastionTest.inspect().actors[0].state==='walk');
+ const before=await inspect(),jointNames=['footl','footr','handl','handr'],changed=new Set(),walkStart=Date.now();let after=before;
+ // Software rendering can stall longer than 400ms. Observe actual rendered
+ // frames and bone poses rather than assuming a wall-clock pause advances RAF.
+ while(Date.now()-walkStart<20000&&changed.size<jointNames.length){
+  await page.waitForTimeout(200);after=await inspect();
+  if(after.frames===before.frames)continue;
+  for(const joint of jointNames)if(JSON.stringify(before.actors[0].joints[joint])!==JSON.stringify(after.actors[0].joints[joint]))changed.add(joint);
+ }
+ report.walkProof={renderedFrames:after.frames-before.frames,wallSeconds:(Date.now()-walkStart)/1000,changedJoints:[...changed],before:before.actors[0].joints,after:after.actors[0].joints};
+ for(const joint of jointNames)assert(changed.has(joint),`Walk bone does not animate: ${joint}; rendered frames: ${report.walkProof.renderedFrames}`);
  report.tests.push('five real canvas screenshots + model/background pixel difference','independent foot/hand animation');
  // Orbit and zoom exercise the actual camera, not a CSS transform.
  const box=await canvas.boundingBox();const cameraBefore=(await inspect()).camera;
@@ -67,7 +77,7 @@ try{
   last=await inspect();for(let i=0;i<last.actors.length;i++){const actor=last.actors[i];seen.add(actor.state);if(actor.hp!==null&&actor.hp<previousHp[i])damaged=true;if(actor.hp!==null)previousHp[i]=actor.hp;if(actor.state==='death')died=true;}
   if(last.finished)break;await page.waitForTimeout(100);
  }
- assert(last.finished,'Real-time battle did not finish in 240s');assert(seen.has('walk'));assert(seen.has('attack'));assert(damaged);assert(died);assert(last.frames>0);assert.equal(last.errors.length,0);
+ assert(last.finished,'Real-time battle did not finish in 300s');assert(seen.has('walk'));assert(seen.has('attack'));assert(damaged);assert(died);assert(last.frames>0);assert.equal(last.errors.length,0);
  report.duel={seconds:last.elapsed,wallSeconds:(Date.now()-fightStart)/1000,videoStartSeconds:fightVideoStart,videoEndSeconds:(Date.now()-videoStart)/1000,seenStates:[...seen],damageObserved:damaged,deathObserved:died,finished:last.finished,softwareFps:last.fps};
  await page.screenshot({path:path.join(output,'desktop-diagnostics.png'),fullPage:true});
  // Responsive QA only. Explicitly NOT Safari/iPhone performance certification.
