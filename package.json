@@ -1,0 +1,8 @@
+{
+  "name": "living-siege-qa",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {"test": "node qa/bastion.mjs"},
+  "devDependencies": {"playwright": "1.55.0"}
+}

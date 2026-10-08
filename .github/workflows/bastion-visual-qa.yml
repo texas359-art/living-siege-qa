@@ -1,0 +1,47 @@
+name: Bastion real WebGL visual QA
+on:
+  push:
+    branches: [main]
+    paths: ['qa/**', 'package*.json', '.github/workflows/bastion-visual-qa.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: bastion-real-webgl
+  cancel-in-progress: true
+jobs:
+  visual-qa:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned Playwright
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Install official Chromium and system dependencies
+        shell: bash
+        run: |
+          mkdir -p bastion-qa-results
+          set -o pipefail
+          npx playwright install --with-deps chromium 2>&1 | tee bastion-qa-results/chromium-install.log
+      - name: Render published Bastion and capture evidence
+        shell: bash
+        env:
+          BASTION_URL: https://living-siege.starmedved.chatgpt.site/bastion-test?v=6
+          BASTION_QA_OUTPUT: bastion-qa-results
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee bastion-qa-results/test.log
+      - name: Save real screenshots, video and exact errors
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bastion-real-webgl-evidence
+          path: bastion-qa-results/
+          retention-days: 7
+          if-no-files-found: warn
