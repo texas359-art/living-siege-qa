@@ -20,7 +20,7 @@ try{
  for(const flag of ['--no-sandbox','--disable-setuid-sandbox','--disable-web-security','--enable-unsafe-swiftshader','--disable-webgl','--ignore-certificate-errors','--disable-ipc-flooding-protection','--disable-client-side-phishing-detection'])assert(!command.arguments.some(a=>a===flag||a.startsWith(flag+'=')),`Forbidden browser flag: ${flag}`);
  assert(!command.arguments.some(a=>a.startsWith('--disable-features=')),'Unexpected disabled browser features');
  context=await browser.newContext({viewport:{width:1100,height:900},deviceScaleFactor:1,recordVideo:{dir:path.join(output,'videos'),size:{width:1100,height:900}},bypassCSP:false,ignoreHTTPSErrors:false});
- page=await context.newPage();
+ page=await context.newPage();const videoStart=Date.now();
  await page.route('**/*',route=>{const url=new URL(route.request().url());return ['blob:','data:'].includes(url.protocol)||url.origin===new URL(target).origin?route.continue():route.abort('blockedbyclient');});
  const pageErrors=[];page.on('pageerror',error=>pageErrors.push(error.message));page.on('console',message=>{if(message.type()==='error')pageErrors.push(message.text());});
  const failedRequests=[];page.on('requestfailed',request=>failedRequests.push({url:request.url(),failure:request.failure()?.errorText}));
@@ -39,6 +39,7 @@ try{
   await page.getByRole('button',{name:label,exact:true}).click();
   await page.evaluate(({state,time})=>window.__bastionTest.previewAt(state,time),{state,time});
   await page.waitForFunction(state=>window.__bastionTest.inspect().actors[0].state===state,state);
+  const viewBox=await canvas.boundingBox();await page.mouse.move(viewBox.x+viewBox.width/2,viewBox.y+viewBox.height/2);await page.mouse.wheel(0,-1000);
   // Allow cross-fades to finish. This is not replacing the scene with an image.
   await page.waitForTimeout(250);
   const pixels=await page.evaluate(()=>window.__bastionTest.pixels());assert.equal(pixels.glError,0);assert(pixels.actorPixels>100,`${label}: no actual model pixels rendered`);checksums.push(pixels.checksum);
@@ -54,6 +55,12 @@ try{
  assert.notDeepEqual((await inspect()).camera,cameraBefore);await page.mouse.wheel(0,-180);await page.waitForTimeout(250);await page.getByRole('button',{name:'Сбросить камеру'}).click();report.tests.push('camera rotation and zoom');
  await page.getByRole('button',{name:'Бастион против Бастиона',exact:true}).click();
  await canvas.scrollIntoViewIfNeeded();report.fightCanvas=await canvas.boundingBox();
+ const fightVideoStart=(Date.now()-videoStart)/1000;
+ // Side view separates the fighters along the screen instead of hiding one behind the other.
+ const position=(await inspect()).camera,azimuth=Math.atan2(position[0],position[2]),drag=-(Math.PI/2-azimuth)*report.fightCanvas.height/(2*Math.PI);
+ const cx=report.fightCanvas.x+report.fightCanvas.width/2,cy=report.fightCanvas.y+report.fightCanvas.height/2;
+ await page.mouse.move(cx,cy);await page.mouse.down();await page.mouse.move(cx+drag,cy,{steps:12});await page.mouse.up();
+ await page.mouse.wheel(0,-250);
  const seen=new Set();let damaged=false,died=false,previousHp=[250,250],last;
  const fightStart=Date.now();
  while(Date.now()-fightStart<240000){
@@ -61,7 +68,7 @@ try{
   if(last.finished)break;await page.waitForTimeout(100);
  }
  assert(last.finished,'Real-time battle did not finish in 240s');assert(seen.has('walk'));assert(seen.has('attack'));assert(damaged);assert(died);assert(last.frames>0);assert.equal(last.errors.length,0);
- report.duel={seconds:last.elapsed,wallSeconds:(Date.now()-fightStart)/1000,seenStates:[...seen],damageObserved:damaged,deathObserved:died,finished:last.finished,softwareFps:last.fps};
+ report.duel={seconds:last.elapsed,wallSeconds:(Date.now()-fightStart)/1000,videoStartSeconds:fightVideoStart,videoEndSeconds:(Date.now()-videoStart)/1000,seenStates:[...seen],damageObserved:damaged,deathObserved:died,finished:last.finished,softwareFps:last.fps};
  await page.screenshot({path:path.join(output,'desktop-diagnostics.png'),fullPage:true});
  // Responsive QA only. Explicitly NOT Safari/iPhone performance certification.
  await page.setViewportSize({width:390,height:844});await page.getByRole('button',{name:'Idle',exact:true}).click();await page.waitForTimeout(300);

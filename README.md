@@ -11,8 +11,10 @@ Target: https://living-siege.starmedved.chatgpt.site/bastion-test?v=6
 - Real GLB and embedded texture decoding, 41 bones and actual animation clips.
 - GPU pixels with/without the 3D actors; empty canvas/background alone must fail.
 - Canvas-only screenshots: Idle, Walk, Attack, Hit, Death.
+- Close-up captures use the real interactive camera; the battle uses a side view.
 - Independent foot/hand bone movement, camera orbit and zoom.
 - Continuous real-time battle recording: movement, attacks, HP reduction and death.
+- `battle.mp4` is cropped from the original recording, with no speed-up or frame interpolation; the full `.webm` source is retained.
 - JavaScript, render and network errors; responsive 390×844 layout.
 
 This does not certify commercial art quality or real iPhone performance. A human must inspect the screenshots/video; physical iPhone Safari remains a separate check.

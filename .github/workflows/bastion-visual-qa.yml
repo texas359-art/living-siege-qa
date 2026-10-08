@@ -37,6 +37,8 @@ jobs:
         run: |
           set -o pipefail
           npm test 2>&1 | tee bastion-qa-results/test.log
+      - name: Export continuous battle video for Safari
+        run: node qa/video.mjs
       - name: Save real screenshots, video and exact errors
         if: always()
         uses: actions/upload-artifact@v4
