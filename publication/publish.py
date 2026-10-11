@@ -14,6 +14,11 @@ def gh(*args,check=True):
     return p
 
 def api(endpoint):return json.loads(gh('api',endpoint).stdout)
+def release_by_tag(tag):
+    # Draft tags may not exist as Git refs yet; the tags endpoint returns 404.
+    pages=json.loads(gh('api',f'repos/{REPO}/releases?per_page=100','--paginate','--slurp').stdout)
+    return next(r for page in pages for r in page if r['tag_name']==tag)
+
 def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 def write(p,d):p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
 def safe_text(p):
@@ -93,7 +98,7 @@ def publish(run_id):
         # A resumable draft keeps its first manifest; newer code must never rewrite old proof.
         retained_manifest=None
         if existing.returncode==0:
-            view=api(f'repos/{REPO}/releases/tags/{tag}')
+            view=release_by_tag(tag)
             if any(a['name']=='build.json' for a in view['assets']):
                 recovery=temp/'recovery';recovery.mkdir();gh('release','download',tag,'-R',REPO,'-p','build.json','-D',str(recovery))
                 retained_manifest=recovery/'build.json';frozen=json.loads(retained_manifest.read_text())
@@ -121,7 +126,7 @@ Frozen proof is attached to this tag. Older releases/assets are never replaced b
 '''
         notes=temp/'notes.md';notes.write_text(body)
         if existing.returncode!=0:gh('release','create',tag,'-R',REPO,'--target',publication_commit,'--title',f'Bastion QA {run["id"]} · {kind} · {run["conclusion"]}','--notes-file',str(notes),'--draft','--prerelease')
-        uploaded=api(f'repos/{REPO}/releases/tags/{tag}')['assets']
+        uploaded=release_by_tag(tag)['assets']
         uploaded_map={a['name']:a for a in uploaded}
         # Manifest first, so interruption before any large upload can resume safely.
         ordered=[out/'build.json',out/'SHA256SUMS.txt']+[p for p in out.iterdir() if p.name not in ['build.json','SHA256SUMS.txt']]
