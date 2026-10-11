@@ -33,7 +33,7 @@ try{
    const px=await page.evaluate(({state,time})=>window.__modelQA.pose('game',state,time),{state,time});assert(px.actorPixels>500);assert.equal(px.error,0);
    if(name==='tower')await page.locator('canvas').screenshot({path:path.join(out,'tower-'+state+'.png')});
   }
-  await page.evaluate(()=>window.__modelQA.pose('game','Walk',.1));const before=await page.evaluate(()=>window.__modelQA.joints());await page.evaluate(()=>window.__modelQA.pose('game','Walk',.5));const after=await page.evaluate(()=>window.__modelQA.joints());for(const j of ['footl','footr','handl','handr'])assert.notDeepEqual(before[j],after[j]);
+  await page.evaluate(()=>window.__modelQA.pose('game','Walk',.1));const before=await page.evaluate(()=>window.__modelQA.joints());await page.evaluate(()=>window.__modelQA.pose('game','Walk',.5));const after=await page.evaluate(()=>window.__modelQA.joints());for(const j of ['footl','footr','handl','handr'])if(JSON.stringify(before[j])===JSON.stringify(after[j]))report.errors.push(name+': Walk joint unchanged '+j);
  }
  assert.equal(report.errors.length,0);report.result='PASS';
 }catch(e){report.result='FAIL';report.errors.push(e.stack);process.exitCode=1}finally{await browser?.close();server.close();await fs.writeFile(path.join(out,'webgl-report.json'),JSON.stringify(report,null,2))}
