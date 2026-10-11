@@ -4,7 +4,7 @@ import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 
 // This launches a NEW, disposable browser. Never connects to a user browser.
-const target=process.env.BASTION_URL||'https://living-siege.starmedved.chatgpt.site/bastion-test?v=6';
+const target=process.env.BASTION_URL||'https://living-siege.starmedved.chatgpt.site/bastion-test?v=8';
 const output=path.resolve(process.env.BASTION_QA_OUTPUT||'bastion-qa-results');
 await fs.mkdir(output,{recursive:true});
 const report={url:target,started:new Date().toISOString(),result:'NOT_RUN',security:{chromiumSandbox:true,bypassCSP:false,ignoreHTTPSErrors:false,unsafeSwiftShader:false},screenshots:[],tests:[],errors:[],physicalIphoneTest:'NOT_PERFORMED: mobile viewport is not a physical iPhone'};
@@ -34,12 +34,12 @@ try{
  const response=await page.goto(target,{waitUntil:'load',timeout:60000});assert.equal(response.status(),200);
  await page.waitForFunction(()=>Boolean(window.__bastionTest),{},{timeout:60000});
  const inspect=()=>page.evaluate(()=>window.__bastionTest.inspect());
- const start=await inspect();assert(start.webgl2);assert.equal(start.bones,41);assert(start.textures.length>0);assert(start.textures.every(t=>t.width>0&&t.height>0));
- for(const clip of ['Idle','Walking_A','Block_Attack','Hit_A','Death_A'])assert(start.clips.some(c=>c.name===clip&&c.tracks>0));
+ const start=await inspect();assert(start.webgl2);assert.equal(start.bones,16);assert.equal(start.asset,'original-bpy-v1');assert(start.textures.length>0);assert(start.textures.every(t=>t.width>0&&t.height>0));
+ for(const clip of ['Idle','Walk','Attack','Hit','Death'])assert(start.clips.some(c=>c.name===clip&&c.tracks>0));
  report.assets={bones:start.bones,textures:start.textures,clips:start.clips};report.tests.push('WebGL2 + SwiftShader','GLB and embedded texture decoded','skeletal animation clips present');
  const canvas=page.locator('.bastion-stage canvas');
  const checksums=[];
- for(const [state,label,time] of [['idle','Idle',.5],['walk','Walk',.3],['attack','Attack',.48],['hit','Hit',.28],['death','Death',.79]]){
+ for(const [state,label,time] of [['idle','Idle',.5],['walk','Walk',.3],['attack','Attack',.48],['hit','Hit',.28],['death','Death',1.5]]){
   await page.getByRole('button',{name:label,exact:true}).click();
   await page.evaluate(({state,time})=>window.__bastionTest.previewAt(state,time),{state,time});
   await page.waitForFunction(state=>window.__bastionTest.inspect().actors[0].state===state,state);
@@ -67,21 +67,27 @@ try{
  const box=await canvas.boundingBox();const cameraBefore=(await inspect()).camera;
  await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.down();await page.mouse.move(box.x+box.width/2+130,box.y+box.height/2+30,{steps:10});await page.mouse.up();await page.waitForTimeout(300);
  assert.notDeepEqual((await inspect()).camera,cameraBefore);await page.mouse.wheel(0,-180);await page.waitForTimeout(250);await page.getByRole('button',{name:'Сбросить камеру'}).click();report.tests.push('camera rotation and zoom');
- await page.getByRole('button',{name:'Бастион против Бастиона',exact:true}).click();
+ await canvas.scrollIntoViewIfNeeded();
+ report.animationCanvas=await canvas.boundingBox();report.animationVideoStart=(Date.now()-videoStart)/1000;
+ await page.getByRole('button',{name:'Walk',exact:true}).click();await page.waitForTimeout(5500);
+ for(let cycle=0;cycle<4;cycle++){await page.getByRole('button',{name:'Attack',exact:true}).click();await page.waitForTimeout(1350);}
+ report.animationVideoEnd=(Date.now()-videoStart)/1000;
+ await page.getByRole('button',{name:'Тестовый бой',exact:true}).click();
  await canvas.scrollIntoViewIfNeeded();report.fightCanvas=await canvas.boundingBox();
  const fightVideoStart=(Date.now()-videoStart)/1000;
  // Side view separates the fighters along the screen instead of hiding one behind the other.
- const position=(await inspect()).camera,azimuth=Math.atan2(position[0],position[2]),drag=-(Math.PI/2-azimuth)*report.fightCanvas.height/(2*Math.PI);
+ const position=(await inspect()).camera,drag=0;
  const cx=report.fightCanvas.x+report.fightCanvas.width/2,cy=report.fightCanvas.y+report.fightCanvas.height/2;
  await page.mouse.move(cx,cy);await page.mouse.down();await page.mouse.move(cx+drag,cy,{steps:12});await page.mouse.up();
  await page.mouse.wheel(0,-250);
  const seen=new Set();let damaged=false,died=false,previousHp=[250,250],last;
  const fightStart=Date.now();
+ let fightShot=false;
  while(Date.now()-fightStart<300000){
-  last=await inspect();for(let i=0;i<last.actors.length;i++){const actor=last.actors[i];seen.add(actor.state);if(actor.hp!==null&&actor.hp<previousHp[i])damaged=true;if(actor.hp!==null)previousHp[i]=actor.hp;if(actor.state==='death')died=true;}
+  last=await inspect();if(!fightShot&&last.elapsed>7){await canvas.screenshot({path:path.join(output,'Battle.png')});fightShot=true;}for(let i=0;i<last.actors.length;i++){const actor=last.actors[i];seen.add(actor.state);if(actor.hp!==null&&actor.hp<previousHp[i])damaged=true;if(actor.hp!==null)previousHp[i]=actor.hp;if(actor.state==='death')died=true;}
   if(last.finished)break;await page.waitForTimeout(100);
  }
- assert(last.finished,'Real-time battle did not finish in 300s');assert(seen.has('walk'));assert(seen.has('attack'));assert(damaged);assert(died);assert(last.frames>0);assert.equal(last.errors.length,0);
+ assert(last.finished,'Real-time battle did not finish in 300s');assert(last.contactEvents>0);assert(last.simulationSeconds>0);assert(seen.has('walk'));assert(seen.has('attack'));assert(damaged);assert(died);assert(last.frames>0);assert.equal(last.errors.length,0);
  report.duel={seconds:last.elapsed,wallSeconds:(Date.now()-fightStart)/1000,videoStartSeconds:fightVideoStart,videoEndSeconds:(Date.now()-videoStart)/1000,seenStates:[...seen],damageObserved:damaged,deathObserved:died,finished:last.finished,softwareFps:last.fps};
  await page.screenshot({path:path.join(output,'desktop-diagnostics.png'),fullPage:true});
  // Finalize the battle recording before any viewport change. Mobile QA uses
@@ -94,7 +100,7 @@ try{
  await page.waitForFunction(()=>Boolean(window.__bastionTest),{},{timeout:60000});
  await page.getByRole('button',{name:'Idle',exact:true}).click();await page.waitForTimeout(300);
  const mobile=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,buttons:[...document.querySelectorAll('nav button')].map(b=>({height:b.getBoundingClientRect().height,width:b.getBoundingClientRect().width})),diagnostics:document.querySelector('[data-testid="diagnostics"]')?.textContent}));
- assert(mobile.scrollWidth<=mobile.width);assert(mobile.buttons.every(b=>b.height>=44));assert(mobile.diagnostics.includes('WebGL 2'));await page.screenshot({path:path.join(output,'mobile-viewport.png'),fullPage:true});report.mobileViewport=mobile;
+ assert(mobile.scrollWidth<=mobile.width);assert(mobile.buttons.every(b=>b.height>=44));assert(mobile.diagnostics.includes('WebGL 2'));await page.screenshot({path:path.join(output,'mobile-viewport.png'),fullPage:true});report.mobileViewport=mobile;report.mobilePixels=await page.evaluate(()=>window.__bastionTest.pixels());assert(report.mobilePixels.actorPixels>100);assert.equal(report.mobilePixels.glError,0);
  assert.equal(pageErrors.length,0,JSON.stringify(pageErrors));assert.equal(failedRequests.length,0,JSON.stringify(failedRequests));assert.equal(badResponses.length,0,JSON.stringify(badResponses));report.tests.push('real-time duel: movement, attacks, HP decrease, death, finish','390×844 responsive layout','no JS / rendering / network errors');
  report.result='PASS';
  await context.close();context=null;
