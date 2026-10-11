@@ -4,7 +4,7 @@ import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 
 // This launches a NEW, disposable browser. Never connects to a user browser.
-const target=process.env.BASTION_URL||'https://living-siege.starmedved.chatgpt.site/bastion-test?v=8';
+const target=process.env.BASTION_URL||'https://living-siege.starmedved.chatgpt.site/bastion-test?v=9';
 const output=path.resolve(process.env.BASTION_QA_OUTPUT||'bastion-qa-results');
 await fs.mkdir(output,{recursive:true});
 const report={url:target,started:new Date().toISOString(),result:'NOT_RUN',security:{chromiumSandbox:true,bypassCSP:false,ignoreHTTPSErrors:false,unsafeSwiftShader:false},screenshots:[],tests:[],errors:[],physicalIphoneTest:'NOT_PERFORMED: mobile viewport is not a physical iPhone'};
@@ -85,7 +85,7 @@ try{
  let fightShot=false;
  while(Date.now()-fightStart<300000){
   last=await inspect();if(!fightShot&&last.elapsed>7){await canvas.screenshot({path:path.join(output,'Battle.png')});fightShot=true;}for(let i=0;i<last.actors.length;i++){const actor=last.actors[i];seen.add(actor.state);if(actor.hp!==null&&actor.hp<previousHp[i])damaged=true;if(actor.hp!==null)previousHp[i]=actor.hp;if(actor.state==='death')died=true;}
-  if(last.finished)break;await page.waitForTimeout(100);
+  if(last.elapsed>3&&last.actors.every(a=>a.hp>0))for(let i=0;i<2;i++){const a=last.actors[i],b=last.actors[1-i],dx=b.position[0]-a.position[0],dz=b.position[2]-a.position[2],d=Math.hypot(dx,dz);assert((Math.sin(a.rotation)*dx+Math.cos(a.rotation)*dz)/d>.95,'Fighter faces away from opponent');}if(last.finished)break;await page.waitForTimeout(100);
  }
  assert(last.finished,'Real-time battle did not finish in 300s');assert(last.contactEvents>0);assert(last.simulationSeconds>0);assert(seen.has('walk'));assert(seen.has('attack'));assert(damaged);assert(died);assert(last.frames>0);assert.equal(last.errors.length,0);
  report.duel={seconds:last.elapsed,wallSeconds:(Date.now()-fightStart)/1000,videoStartSeconds:fightVideoStart,videoEndSeconds:(Date.now()-videoStart)/1000,seenStates:[...seen],damageObserved:damaged,deathObserved:died,finished:last.finished,softwareFps:last.fps};
@@ -102,6 +102,25 @@ try{
  const mobile=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,buttons:[...document.querySelectorAll('nav button')].map(b=>({height:b.getBoundingClientRect().height,width:b.getBoundingClientRect().width})),diagnostics:document.querySelector('[data-testid="diagnostics"]')?.textContent}));
  assert(mobile.scrollWidth<=mobile.width);assert(mobile.buttons.every(b=>b.height>=44));assert(mobile.diagnostics.includes('WebGL 2'));await page.screenshot({path:path.join(output,'mobile-viewport.png'),fullPage:true});report.mobileViewport=mobile;report.mobilePixels=await page.evaluate(()=>window.__bastionTest.pixels());assert(report.mobilePixels.actorPixels>100);assert.equal(report.mobilePixels.glError,0);
  assert.equal(pageErrors.length,0,JSON.stringify(pageErrors));assert.equal(failedRequests.length,0,JSON.stringify(failedRequests));assert.equal(badResponses.length,0,JSON.stringify(badResponses));report.tests.push('real-time duel: movement, attacks, HP decrease, death, finish','390×844 responsive layout','no JS / rendering / network errors');
+ 
+ await page.setViewportSize({width:760,height:720});await page.goto(target,{waitUntil:'load',timeout:60000});await page.waitForFunction(()=>Boolean(window.__bastionTest),{},{timeout:60000});
+ await page.evaluate(()=>window.__bastionTest.captureStart());
+ const captureCanvas=page.locator('.bastion-stage canvas'),fps=24;
+ report.frameCapture={fps,battleSeconds:20,animationSeconds:6.2,method:'Each PNG is rendered by the published WebGL scene after advancing the actual unchanged game simulation. No interpolation, pose substitution or realtime-video speed-up.'};
+ for(const sequence of ['animation','battle']){
+  const dir=path.join(output,'frames-'+sequence);await fs.mkdir(dir,{recursive:true});
+  await page.evaluate(sequence=>sequence==='battle'?window.__bastionTest.duel():window.__bastionTest.select('walk'),sequence);
+  for(let settle=0;settle<20;settle++)await page.evaluate(()=>window.__bastionTest.captureFrame(0));
+  const count=Math.round((sequence==='battle'?20:6.2)*fps);
+  for(let frame=0;frame<count;frame++){
+   if(sequence==='animation'&&frame>=3*fps&&(frame-3*fps)%Math.round(32/30*fps)===0)await page.evaluate(()=>window.__bastionTest.select('attack'));
+   const state=await page.evaluate(dt=>window.__bastionTest.captureFrame(dt),1/fps);
+   if(sequence==='battle'&&frame===Math.round(8*fps))await captureCanvas.screenshot({path:path.join(output,'Battle.png')});
+   if(sequence==='battle'&&frame===count-1){assert(state.contactEvents>0);report.frameCapture.contactEvents=state.contactEvents;report.frameCapture.simulationSeconds=state.simulationSeconds;}
+   await captureCanvas.screenshot({path:path.join(dir,String(frame).padStart(5,'0')+'.png')});
+  }
+  const px=await page.evaluate(()=>window.__bastionTest.pixels());assert.equal(px.glError,0);assert(px.actorPixels>100);
+ }
  report.result='PASS';
  await context.close();context=null;
 }catch(error){report.result='FAIL';report.errors.push(error.stack||String(error));if(page&&!page.isClosed())await page.screenshot({path:path.join(output,'failure-page.png'),fullPage:true}).catch(()=>{});process.exitCode=1;}
