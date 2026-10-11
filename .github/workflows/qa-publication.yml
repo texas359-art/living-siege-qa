@@ -1,0 +1,51 @@
+name: Publish permanent public QA evidence
+on:
+  workflow_run:
+    workflows: ['Bastion Blender asset pipeline', 'Bastion real WebGL visual QA']
+    types: [completed]
+    branches: [main]
+  push:
+    branches: [main]
+    paths: ['publication/**', '.github/workflows/qa-publication.yml']
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Existing exact run ID to backfill (blank: configured bootstrap runs)'
+        required: false
+        type: string
+permissions:
+  actions: read
+  contents: write
+concurrency:
+  group: qa-publication
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.repository == 'texas359-art/living-siege-qa' && github.event.repository.private == false
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Install image montage dependency
+        run: python3 -m pip install Pillow
+      - name: Publish versioned public Releases and verify anonymous downloads
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_RUN_ID: ${{ inputs.run_id }}
+        run: python3 publication/publish.py
+      - name: Commit latest index and append-only run metadata
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add QA_LATEST.md QA_LATEST.json qa-results/
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Update public QA index and versioned run metadata'
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then exit 0; fi
+            git pull --rebase origin main
+          done
+          exit 1
