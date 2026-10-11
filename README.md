@@ -1,36 +1,28 @@
-# Living Siege — real 3D visual QA
+# Living Siege — Bastion QA
 
-Dedicated QA repository for the published Bastion scene. No game source, private account data or credentials are stored here. No other project is changed.
+**Постоянная точка входа: [QA_LATEST.md](QA_LATEST.md).**
 
-Target: https://living-siege.starmedved.chatgpt.site/bastion-test?v=6
+[JSON для другого чата или скрипта](https://raw.githubusercontent.com/texas359-art/living-siege-qa/main/QA_LATEST.json) · [История сборок](qa-results/) · [Публичные Releases](https://github.com/texas359-art/living-siege-qa/releases)
 
-## Checks and evidence
+Индекс содержит текущую тестовую сцену, прямые HTTPS-ссылки на видео и реальные 3D-кадры, GLB, Blender-исходники, успешные Actions и известные недостатки. Старые доказательства закреплены за run ID / attempt / исходным commit SHA; новые версии их не заменяют. GitHub Releases сохраняют материалы независимо от срока Actions Artifacts. Доступ файлов и индекса проверяется без авторизации.
 
-- An actual WebGL2 context backed by ANGLE / SwiftShader.
-- Browser command-line audit: sandbox enabled, no unsafe SwiftShader, no web-security/TLS bypass.
-- Real GLB and embedded texture decoding, 41 bones and actual animation clips.
-- GPU pixels with/without the 3D actors; empty canvas/background alone must fail.
-- Canvas-only screenshots: Idle, Walk, Attack, Hit, Death.
-- Close-up captures use the real interactive camera; the battle uses a side view.
-- Independent foot/hand bone movement, camera orbit and zoom.
-- Continuous real-time battle recording: movement, attacks, HP reduction and death.
-- `battle.mp4` is cropped from the original recording, with no speed-up or frame interpolation; the full `.webm` source is retained.
-- JavaScript, render and network errors; responsive 390×844 layout.
+## Процесс
 
-This does not certify commercial art quality or real iPhone performance. A human must inspect the screenshots/video; physical iPhone Safari remains a separate check.
+1. `bastion-blender.yml`: официальный Ubuntu Blender, bpy, три оригинальных дизайна и отдельный противник, GLB со скелетом, материалами и анимациями. Реальные front / side / game кадры экспортированных моделей снимаются в WebGL.
+2. `bastion-visual-qa.yml`: Chromium, Playwright, SwiftShader; проверка опубликованной сцены, моделей, отдельных конечностей, камеры, направления бойцов, урона, попаданий, поражения и мобильного viewport. Реально загруженные GLB сохраняются с SHA256.
+3. `qa-publication.yml`: автоматически после завершения проверок публикует разрешённые материалы в отдельном Release и обновляет корневой индекс. Ошибка или отмена не подменяет последний успешный результат.
 
-## Execution
+В актуальном оригинальном GLB — 16 костей и Idle / Walk / Attack / Hit / Death / Spawn. Точные параметры конкретной версии находятся в её отчёте и manifest.
 
-Standard public-repository Ubuntu 22.04 runner, pinned Playwright 1.55.0 matching the provided `texas359-art/-anomaly-lab` reference. Chromium is installed by official `npx playwright install --with-deps chromium` on the runner, never in ChatGPT Work. No sandbox policy changes or paid services.
+## Видео и достоверность
 
-The workflow runs on changes to the QA files or manual dispatch. It stops if the repository becomes private. All results, including exact failure logs, are saved as Actions Artifacts for 7 days.
+- `battle.mp4`: 20 секунд покадрового WebGL-рендера настоящей игровой симуляции.
+- `walk-attack.mp4`: ходьба и атака той же модели.
+- `all-animations.mp4` и `animation-timeline.json`: пять основных состояний и их временные интервалы (только в новых запусках, где они действительно сняты).
+- `live-battle.mp4`: отдельная живая запись SwiftShader с реальной частотой кадров.
 
-Locally, use a non-root account in an environment that permits the browser sandbox:
+Покадровые записи не подтверждают аппаратный FPS. Технический PASS не утверждает коммерческое художественное качество. Физический iPhone/Safari отдельно не проверен. Художественный статус текущего героя — ожидание оценки пользователя.
 
-```sh
-npm install --ignore-scripts
-npx playwright install --with-deps chromium
-npm test
-```
+Текущий сайт может изменяться; `?v=` не замораживает deployment. Для проверки старой версии используйте её Release. Tag обозначает коммит публикации, `commit_sha` в build.json — именно проверенные исходники. Отдельная ссылка ведёт на архив этого точного SHA.
 
-If sandboxing or WebGL is unavailable, report the failure; do not add security-disabling flags.
+Основная игра не заменена. Код публикации, восстановление пропущенных запусков и правила безопасности: [publication/README.md](publication/README.md). Токены, приватные данные, browser profiles и полные логи не публикуются.
