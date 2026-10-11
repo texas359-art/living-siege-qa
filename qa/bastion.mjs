@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
+import {createHash} from 'node:crypto';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 
@@ -21,12 +22,16 @@ try{
  assert(!command.arguments.some(a=>a.startsWith('--disable-features=')),'Unexpected disabled browser features');
  context=await browser.newContext({viewport:{width:1100,height:900},deviceScaleFactor:1,recordVideo:{dir:path.join(output,'videos'),size:{width:1100,height:900}},bypassCSP:false,ignoreHTTPSErrors:false});
  page=await context.newPage();const videoStart=Date.now();
- const pageErrors=[],failedRequests=[],badResponses=[];
+ const pageErrors=[],failedRequests=[],badResponses=[],modelCaptures=[],capturedModels=new Map();
  const monitorPage=async p=>{
   await p.route('**/*',route=>{const url=new URL(route.request().url());return ['blob:','data:'].includes(url.protocol)||url.origin===new URL(target).origin?route.continue():route.abort('blockedbyclient');});
   p.on('pageerror',error=>pageErrors.push(error.message));p.on('console',message=>{if(message.type()==='error')pageErrors.push(message.text());});
   p.on('requestfailed',request=>failedRequests.push({url:request.url(),failure:request.failure()?.errorText}));
   p.on('response',response=>{if(response.status()>=400)badResponses.push({url:response.url(),status:response.status()});});
+  p.on('response',response=>{const name=new URL(response.url()).pathname.split('/').pop();if(!/^bastion-(tower|forge|sentinel|raider)\.glb$/.test(name)||response.status()!==200)return;
+   modelCaptures.push((async()=>{const body=await response.body(),hash=createHash('sha256').update(body).digest('hex');const old=capturedModels.get(name);if(old&&old.sha256!==hash)throw Error('Scene model changed during QA: '+name);capturedModels.set(name,{url:response.url(),sha256:hash,bytes:body.length});await fs.mkdir(path.join(output,'verified-models'),{recursive:true});await fs.writeFile(path.join(output,'verified-models',name),body);})().catch(e=>pageErrors.push(e.message)));
+  });
+
  };
  await monitorPage(page);
  const probe=await page.evaluate(()=>{const canvas=document.createElement('canvas'),gl=canvas.getContext('webgl2');if(!gl)return{webgl2:false};const debug=gl.getExtension('WEBGL_debug_renderer_info');const result={webgl2:true,version:gl.getParameter(gl.VERSION),renderer:gl.getParameter(debug?debug.UNMASKED_RENDERER_WEBGL:gl.RENDERER)};gl.getExtension('WEBGL_lose_context')?.loseContext();return result;});
@@ -121,6 +126,17 @@ try{
   }
   const px=await page.evaluate(()=>window.__bastionTest.pixels());assert.equal(px.glError,0);assert(px.actorPixels>100);
  }
+
+ const timeline=[['idle',2],['walk',2.8],['attack',1.4],['hit',1.1],['death',2.1]];
+ const statesDir=path.join(output,'frames-states');await fs.mkdir(statesDir,{recursive:true});let index=0;report.animationTimeline=[];
+ for(const [state,duration]of timeline){
+  await page.evaluate(state=>window.__bastionTest.select(state),state);const start=index/fps;
+  for(let settle=0;settle<20;settle++)await page.evaluate(()=>window.__bastionTest.captureFrame(0));
+  const count=Math.round(duration*fps);for(let frame=0;frame<count;frame++){await page.evaluate(dt=>window.__bastionTest.captureFrame(dt),1/fps);await captureCanvas.screenshot({path:path.join(statesDir,String(index++).padStart(5,'0')+'.png')});}
+  report.animationTimeline.push({state,startSeconds:start,endSeconds:index/fps});
+ }
+ await fs.writeFile(path.join(output,'animation-timeline.json'),JSON.stringify(report.animationTimeline,null,2));
+ await Promise.all(modelCaptures);report.modelFiles=Object.fromEntries(capturedModels);assert(report.modelFiles['bastion-tower.glb']);assert(report.modelFiles['bastion-raider.glb']);assert.equal(pageErrors.length,0,JSON.stringify(pageErrors));
  report.result='PASS';
  await context.close();context=null;
 }catch(error){report.result='FAIL';report.errors.push(error.stack||String(error));if(page&&!page.isClosed())await page.screenshot({path:path.join(output,'failure-page.png'),fullPage:true}).catch(()=>{});process.exitCode=1;}
