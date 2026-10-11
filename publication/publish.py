@@ -36,6 +36,7 @@ def publish(run_id):
     if run['head_repository']['full_name']!=REPO or run['head_branch']!='main' or run['event'] not in ['push','workflow_dispatch']:raise RuntimeError('Untrusted run source')
     if run['status']!='completed':raise RuntimeError('Run is not complete')
     kind,artifact_name=WORKFLOWS[run['name']]
+    publication_commit=api(f'repos/{REPO}/git/ref/heads/main')['object']['sha']
     tag=f"qa-{run['id']}-a{run['run_attempt']}-{run['head_sha'][:12]}"
     record_path=HISTORY/(tag+'.json')
     existing=gh('release','view',tag,'-R',REPO,'--json','isDraft',check=False)
@@ -88,14 +89,16 @@ def publish(run_id):
         (out/'known-issues.md').write_text((ROOT/'publication/KNOWN_ISSUES.md').read_text())
         base=f'https://github.com/{REPO}/releases/download/{tag}/'
         assets={p.name:{'url':base+p.name,'sha256':sha(p),'bytes':p.stat().st_size} for p in sorted(out.iterdir())}
-        record={'schema_version':1,'kind':kind,'run_id':run['id'],'run_attempt':run['run_attempt'],'commit_sha':run['head_sha'],'workflow':run['name'],'created_at':run['created_at'],'completed_at':run['updated_at'],'status':run['conclusion'],'qa_result':report.get('result'),'art_status':CONFIG['art_status'],'release_tag':tag,'release_url':f'https://github.com/{REPO}/releases/tag/{tag}','actions_url':run['html_url'],'scene_url':report.get('url',CONFIG['scene_url']),'site_source_commit':CONFIG['site_source_commit'],'site_version':CONFIG['site_version'],'scene_is_mutable':True,'artifact_provenance':[{'id':a['id'],'name':a['name'],'digest':a.get('digest')} for a in selected],'assets':assets,'model_hashes':{p.stem.removeprefix('bastion-'):sha(p) for p in out.glob('*.glb')},'model_run_id':CONFIG['model_run_id'] if not report.get('modelFiles') else None,'capture':report.get('frameCapture'),'errors':report.get('errors',[])}
+        record={'schema_version':1,'kind':kind,'run_id':run['id'],'run_attempt':run['run_attempt'],'commit_sha':run['head_sha'],'workflow':run['name'],'publication_commit':publication_commit,'tag_target_role':'publication snapshot; tested source is commit_sha','tested_source_archive_url':f'https://github.com/{REPO}/archive/{run["head_sha"]}.tar.gz','created_at':run['created_at'],'completed_at':run['updated_at'],'status':run['conclusion'],'qa_result':report.get('result'),'art_status':CONFIG['art_status'],'release_tag':tag,'release_url':f'https://github.com/{REPO}/releases/tag/{tag}','actions_url':run['html_url'],'scene_url':report.get('url',CONFIG['scene_url']),'site_source_commit':CONFIG['site_source_commit'],'site_version':CONFIG['site_version'],'scene_is_mutable':True,'artifact_provenance':[{'id':a['id'],'name':a['name'],'digest':a.get('digest')} for a in selected],'assets':assets,'model_hashes':{p.stem.removeprefix('bastion-'):sha(p) for p in out.glob('*.glb')},'model_run_id':CONFIG['model_run_id'] if not report.get('modelFiles') else None,'capture':report.get('frameCapture'),'errors':report.get('errors',[])}
         write(out/'build.json',record)
         payload=list(out.iterdir())
         (out/'SHA256SUMS.txt').write_text(''.join(sha(p)+'  '+p.name+'\n' for p in sorted(payload)))
         body=f'''# Bastion QA {run['id']} / attempt {run['run_attempt']}
 
 - Kind: {kind}; workflow/QA status: {run['conclusion']} / {report.get('result')}
-- Source commit: `{run['head_sha']}`
+- Tested source commit: `{run['head_sha']}`
+- Release tag points to publication commit: `{publication_commit}` (not the tested source).
+- [Exact tested source archive](https://github.com/{REPO}/archive/{run['head_sha']}.tar.gz)
 - Completed UTC: {run['updated_at']}
 - [Exact Actions run]({run['html_url']})
 - [Current scene (mutable)]({record['scene_url']})
@@ -104,7 +107,7 @@ def publish(run_id):
 Frozen proof is attached to this tag. Older releases/assets are never replaced by this publisher. Read build.json, SHA256SUMS.txt, {report_name}, known-issues.md. The scene URL can change independently; ?v= does not freeze it. Fixed-step WebGL MP4s and live SwiftShader recordings are explicitly distinguished. No tokens or logs are attached.
 '''
         notes=temp/'notes.md';notes.write_text(body)
-        if existing.returncode!=0:gh('release','create',tag,'-R',REPO,'--target',run['head_sha'],'--title',f'Bastion QA {run["id"]} · {kind} · {run["conclusion"]}','--notes-file',str(notes),'--draft','--prerelease')
+        if existing.returncode!=0:gh('release','create',tag,'-R',REPO,'--target',publication_commit,'--title',f'Bastion QA {run["id"]} · {kind} · {run["conclusion"]}','--notes-file',str(notes),'--draft','--prerelease')
         uploaded=json.loads(gh('release','view',tag,'-R',REPO,'--json','assets').stdout)['assets']
         uploaded_names={a['name'] for a in uploaded}
         for p in out.iterdir():
@@ -132,7 +135,7 @@ def update_index():
             if name in r['assets']:lines.append(f'- [{label}]({r["assets"][name]["url"]})')
             else:lines.append(f'- {label}: отсутствует в этом историческом запуске; не подменён новым файлом.')
     if scene:
-        lines += ['## Последняя успешная проверка опубликованной сцены','',f'- [Текущая тестовая сцена]({scene["scene_url"]}) — изменяемый адрес; исторические доказательства закреплены в Release.',f'- [Конкретная сборка / Release]({scene["release_url"]})',f'- [Успешный GitHub Actions]({scene["actions_url"]})',f'- Run ID: `{scene["run_id"]}` · attempt `{scene["run_attempt"]}` · дата UTC `{scene["completed_at"]}`',f'- QA source commit: `{scene["commit_sha"]}` · заявленный source commit сайта: `{scene["site_source_commit"]}`.',f'- [Метаданные и SHA256](https://github.com/{REPO}/releases/download/{scene["release_tag"]}/build.json)',f'- [Контрольные суммы файлов](https://github.com/{REPO}/releases/download/{scene["release_tag"]}/SHA256SUMS.txt)','']
+        lines += ['## Последняя успешная проверка опубликованной сцены','',f'- [Текущая тестовая сцена]({scene["scene_url"]}) — изменяемый адрес; исторические доказательства закреплены в Release.',f'- [Конкретная сборка / Release]({scene["release_url"]})',f'- [Успешный GitHub Actions]({scene["actions_url"]})',f'- Run ID: `{scene["run_id"]}` · attempt `{scene["run_attempt"]}` · дата UTC `{scene["completed_at"]}`',f'- QA source commit: `{scene["commit_sha"]}` · заявленный source commit сайта: `{scene["site_source_commit"]}`.',f'- [Метаданные и SHA256](https://github.com/{REPO}/releases/download/{scene["release_tag"]}/build.json)',f'- [Контрольные суммы файлов](https://github.com/{REPO}/releases/download/{scene["release_tag"]}/SHA256SUMS.txt)',f'- [Исходники точного проверенного QA commit](https://github.com/{REPO}/archive/{scene["commit_sha"]}.tar.gz) — tag Release обозначает публикацию, а не этот source commit.','']
         links(scene,[('Бой 20 секунд — MP4, покадровый WebGL','battle.mp4'),('Настоящая живая запись боя SwiftShader — MP4','live-battle.mp4'),('Ходьба и атака — MP4','walk-attack.mp4'),('Idle / Walk / Attack / Hit / Death — MP4','all-animations.mp4'),('Временные интервалы анимаций','animation-timeline.json'),('Крупный кадр персонажа','Idle.png'),('Кадр настоящего боя','Battle.png'),('Мобильный viewport','mobile-viewport.png'),('Отчёт ошибок и проверки','report.json'),('Известные недостатки','known-issues.md')])
         lines += ['', '**Важно:** покадровые MP4 сняты из настоящей WebGL-сцены с шагом симуляции; они не подтверждают realtime FPS. Живая запись опубликована отдельно. Технический PASS не является художественным утверждением.','']
     if model:
