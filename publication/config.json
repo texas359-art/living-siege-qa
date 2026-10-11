@@ -1,0 +1,9 @@
+{
+  "scene_url": "https://living-siege.starmedved.chatgpt.site/bastion-test?v=9",
+  "site_source_commit": "b840fed8cb6bf0eee8ba648db8d7fab45d233eca",
+  "site_version": 9,
+  "model_run_id": 38124834238,
+  "bootstrap_runs": [38124834238, 38125927885],
+  "art_status": "PENDING_USER_REVIEW",
+  "schema_version": 1
+}
