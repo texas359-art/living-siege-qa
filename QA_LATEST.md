@@ -1,6 +1,6 @@
 # Последние результаты QA · Бастион
 
-Обновлено UTC: 2026-10-11T10:50:38.456638+00:00. Художественный статус: **PENDING_USER_REVIEW**.
+Обновлено UTC: 2026-10-11T10:51:07.671424+00:00. Художественный статус: **PENDING_USER_REVIEW**.
 
 [Машиночитаемый индекс](https://raw.githubusercontent.com/texas359-art/living-siege-qa/main/QA_LATEST.json). Прямые ссылки ниже публичны; файлы Release проверены без cookies и Authorization.
 
