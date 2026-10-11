@@ -16,6 +16,8 @@ jobs:
     timeout-minutes: 30
     env:
       PYTHONPATH: /usr/lib/python3/dist-packages
+      BLENDER_SYSTEM_DATAFILES: /usr/share/blender/datafiles
+      BLENDER_SYSTEM_SCRIPTS: /usr/share/blender/scripts
     steps:
       - uses: actions/checkout@v4
         with:
@@ -40,6 +42,16 @@ jobs:
             set -o pipefail
             blender --python-use-system-env --background --factory-startup --python-exit-code 1 --python blender/create_bastion.py 2>&1 | tee model-results/build.log
           fi
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install WebGL validation runtime
+        run: |
+          npm install --ignore-scripts --no-audit --no-fund
+          npm install --no-save --ignore-scripts --no-audit --no-fund three@0.186.1
+          npx playwright install --with-deps chromium
+      - name: Verify exported rigs materials clips and real WebGL images
+        run: node blender/webgl.mjs
       - name: Preserve models sources renders and logs
         if: always()
         uses: actions/upload-artifact@v4
