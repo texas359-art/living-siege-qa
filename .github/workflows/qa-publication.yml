@@ -49,3 +49,6 @@ jobs:
             git pull --rebase origin main
           done
           exit 1
+
+      - name: Verify public latest index without credentials
+        run: python3 publication/verify_index.py
