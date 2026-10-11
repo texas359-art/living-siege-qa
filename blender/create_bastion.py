@@ -70,7 +70,7 @@ def build(variant,enemy=False):
     global PARTS
     bpy.ops.object.select_all(action='SELECT');bpy.ops.object.delete(use_global=False);PARTS=[]
     for action in list(bpy.data.actions):bpy.data.actions.remove(action)
-    steel=material('Blue tempered armour',(.075,.17,.24),.72,.3)
+    steel=material('Blue tempered armour',(.16,.31,.40),.58,.36)
     edge=material('Brushed pale alloy',(.46,.61,.65),.78,.3)
     brass=material('Warm brass inlay',(.65,.37,.115),.7,.34)
     accent=material('Ember enamel',(.88,.21,.055),.18,.32)
@@ -78,7 +78,7 @@ def build(variant,enemy=False):
     cloth=material('Carbon weave',(.028,.038,.045),.0,.78)
     glow=material('Warm visor',(.98,.56,.16),.1,.26)
     if enemy:steel=material('Raider copper armour',(.45,.055,.025),.63,.37)
-    width={'tower':1,'forge':1.13,'sentinel':.91}[variant]
+    width={'tower':1,'forge':1.26,'sentinel':.82}[variant]
     # Purpose-built armour torso with six changing cross sections.
     loft('Underarm flexible torso',[(0,0,1.16,.36,.26),(0,0,1.45,.49,.30),(0,0,1.88,.55,.30),(0,0,2.04,.48,.27)],cloth,'spine')
     loft('Forged breast shell',[(0,0,1.35,.42*width,.31),(0,0,1.52,.57*width,.38),(0,.015,1.91,.68*width,.42),(0,.035,2.12,.58*width,.33),(0,.04,2.18,.44*width,.28)],steel,'spine',n=20)
@@ -145,8 +145,17 @@ def build(variant,enemy=False):
     for sign in [-1,1]:
         for j in range(2):rivet('Helmet hinge',sign*.35,-.33,2.30+j*.11,brass,'head')
     if variant=='tower':
-        strip('Helmet keystone crest',[(0,2.77),(0,2.93)],.075,-.12,.26,brass,'head')
+        plate('Helmet crown keystone',[(-.09,2.75),(.09,2.75),(.075,3.03),(0,3.11),(-.075,3.03)],-.14,.35,brass,'head',bevel=.02)
+        for sign in [-1,1]:
+            plate('Crown buttress',[(sign*.12,2.74),(sign*.30,2.78),(sign*.25,2.92),(sign*.13,2.90)],-.10,.24,edge,'head',bevel=.025)
+    if variant=='forge':
+        for sign in [-1,1]:
+            plate('Forge jaw guard',[(sign*.08,2.45),(sign*.40,2.48),(sign*.44,2.25),(sign*.22,2.15),(sign*.08,2.23)],-.47,.10,brass,'head',bevel=.02)
+            for j in range(3):
+                plate('Forge jaw vent',[(sign*(.17+j*.055),2.36),(sign*(.20+j*.055),2.36),(sign*(.20+j*.055),2.23),(sign*(.17+j*.055),2.23)],-.49,.025,dark,'head',bevel=.004)
     if variant=='sentinel':
+        for sign,side in [(-1,'l'),(1,'r')]:
+            plate('Sentinel swept shoulder wing',[(sign*.67,2.09),(sign*1.13,2.11),(sign*1.20,2.51),(sign*.96,2.28)],.05,.22,edge,'upperarm'+side,bevel=.025)
         plate('Long rear helmet crest',[(-.06,2.71),(.06,2.71),(.045,3.08),(-.045,3.03)],.02,.34,brass,'head')
     # Oversized shield uses nested authored polygon surfaces and a raised emblem.
     if not enemy:
