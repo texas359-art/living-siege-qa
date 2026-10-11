@@ -39,7 +39,7 @@ jobs:
       - name: Render published Bastion and capture evidence
         shell: bash
         env:
-          BASTION_URL: https://living-siege.starmedved.chatgpt.site/bastion-test?v=6
+          BASTION_URL: https://living-siege.starmedved.chatgpt.site/bastion-test?v=8
           BASTION_QA_OUTPUT: bastion-qa-results
         run: |
           set -o pipefail
