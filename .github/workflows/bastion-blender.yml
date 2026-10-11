@@ -1,0 +1,50 @@
+name: Bastion Blender asset pipeline
+on:
+  push:
+    branches: [main]
+    paths: ['blender/**', '.github/workflows/bastion-blender.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: bastion-blender
+  cancel-in-progress: true
+jobs:
+  build-models:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install Blender from official Ubuntu archive
+        shell: bash
+        run: |
+          mkdir -p model-results
+          set -o pipefail
+          sudo apt-get update 2>&1 | tee model-results/install.log
+          sudo apt-get install -y blender ffmpeg 2>&1 | tee -a model-results/install.log
+          blender --version | tee model-results/blender-version.txt
+      - name: Probe bpy and GLB exporter
+        shell: bash
+        run: |
+          set -o pipefail
+          blender --background --factory-startup --python-exit-code 1 --python-expr "import bpy; bpy.ops.export_scene.gltf(filepath='model-results/export-probe.glb', export_format='GLB'); print('BPY_AND_GLB_OK')" 2>&1 | tee model-results/probe.log
+      - name: Create original variants with rig and animation
+        shell: bash
+        run: |
+          if [ -f blender/create_bastion.py ]; then
+            set -o pipefail
+            blender --background --factory-startup --python-exit-code 1 --python blender/create_bastion.py 2>&1 | tee model-results/build.log
+          fi
+      - name: Preserve models sources renders and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bastion-blender-models
+          path: |
+            model-results/
+            blender/
+          retention-days: 14
+          if-no-files-found: error
