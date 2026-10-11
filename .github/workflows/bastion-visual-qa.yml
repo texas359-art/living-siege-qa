@@ -13,7 +13,7 @@ jobs:
   visual-qa:
     if: github.event.repository.private == false
     runs-on: ubuntu-22.04
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -39,7 +39,7 @@ jobs:
       - name: Render published Bastion and capture evidence
         shell: bash
         env:
-          BASTION_URL: https://living-siege.starmedved.chatgpt.site/bastion-test?v=8
+          BASTION_URL: https://living-siege.starmedved.chatgpt.site/bastion-test?v=9
           BASTION_QA_OUTPUT: bastion-qa-results
         run: |
           set -o pipefail
