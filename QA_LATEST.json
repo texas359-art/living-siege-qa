@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-10-11T10:47:21.236396+00:00",
+  "updated_at": "2026-10-11T10:50:23.004684+00:00",
   "latest_attempt": {
     "schema_version": 1,
     "kind": "scene",
@@ -52,8 +52,504 @@
       }
     }
   },
-  "latest_successful_scene": null,
-  "related_model_build": null,
+  "latest_successful_scene": {
+    "schema_version": 1,
+    "kind": "scene",
+    "run_id": 38125927885,
+    "run_attempt": 1,
+    "commit_sha": "37d729995de40556f53ed33a80966b202fd2fa5b",
+    "workflow": "Bastion real WebGL visual QA",
+    "publication_commit": "6a6df73d630d83465903c146f0ac579fbe126275",
+    "tag_target_role": "publication snapshot; tested source is commit_sha",
+    "tested_source_archive_url": "https://github.com/texas359-art/living-siege-qa/archive/37d729995de40556f53ed33a80966b202fd2fa5b.tar.gz",
+    "created_at": "2026-10-11T08:45:23Z",
+    "completed_at": "2026-10-11T08:54:29Z",
+    "status": "success",
+    "qa_result": "PASS",
+    "art_status": "PENDING_USER_REVIEW",
+    "release_tag": "qa-38125927885-a1-37d729995de4",
+    "release_url": "https://github.com/texas359-art/living-siege-qa/releases/tag/qa-38125927885-a1-37d729995de4",
+    "actions_url": "https://github.com/texas359-art/living-siege-qa/actions/runs/38125927885",
+    "scene_url": "https://living-siege.starmedved.chatgpt.site/bastion-test?v=9",
+    "site_source_commit": "b840fed8cb6bf0eee8ba648db8d7fab45d233eca",
+    "site_version": 9,
+    "scene_is_mutable": true,
+    "artifact_provenance": [
+      {
+        "id": 11697147493,
+        "name": "bastion-real-webgl-evidence",
+        "digest": "sha256:dbb557b7f66478feeabe1fca78c1a90267c92afd58aa78ff8176c48ce28e266c"
+      }
+    ],
+    "assets": {
+      "Attack.png": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38125927885-a1-37d729995de4/Attack.png",
+        "sha256": "14f1bc6819929e726e849e89738b78a1791a1b3a717fdf4c067aeaa4f9fb7b4b",
+        "bytes": 293197
+      },
+      "Battle.png": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38125927885-a1-37d729995de4/Battle.png",
+        "sha256": "f43e32b4e6421af206b7bc2a803cedd6f5f73d686f6332c6a9b340b18f952658",
+        "bytes": 123538
+      },
+      "Death.png": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38125927885-a1-37d729995de4/Death.png",
+        "sha256": "cc5b30c89a1d4bf781b060faf67ef1ff95a4caf2a3e5dc8c6a3ba8ec47c6e7ac",
+        "bytes": 146658
+      },
+      "Hit.png": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38125927885-a1-37d729995de4/Hit.png",
+        "sha256": "59e7970a142cb32b879aff96a86ae665c426f4b2b0919a28133ff3ebbec5ed72",
+        "bytes": 259280
+      },
+      "Idle.png": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38125927885-a1-37d729995de4/Idle.png",
+        "sha256": "26313f3d4cfdd2dc297fd24bb3ee7cc58b921ec21eb308a4f7e970ff96be69d4",
+        "bytes": 264824
+      },
+      "Walk.png": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38125927885-a1-37d729995de4/Walk.png",
+        "sha256": "19ab0c1b4846cc3c35705c5a4d8a2e6edaa1b7bcb92c61783d5478ba8b11ac5b",
+        "bytes": 263611
+      },
+      "battle.mp4": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38125927885-a1-37d729995de4/battle.mp4",
+        "sha256": "2cfb56604437248c5671ae5446f595a0e474db704de4f9b005309f4c6d8dc935",
+        "bytes": 1481137
+      },
+      "desktop-diagnostics.png": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38125927885-a1-37d729995de4/desktop-diagnostics.png",
+        "sha256": "88ae4952f06f09c76d02885516fa599fbf3acc1b5f3f764f6bb5af014e9c1df8",
+        "bytes": 261601
+      },
+      "known-issues.md": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38125927885-a1-37d729995de4/known-issues.md",
+        "sha256": "0a581357f4ca657e4f892ce7d1003f5163328bb62cb0a2b67ae3882b68b15300",
+        "bytes": 2463
+      },
+      "live-battle.mp4": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38125927885-a1-37d729995de4/live-battle.mp4",
+        "sha256": "954e618b8427b817dcabb3052b1898e9bb0d3c750b7f23fbb1872800265f1f73",
+        "bytes": 2565308
+      },
+      "live-walk-attack.mp4": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38125927885-a1-37d729995de4/live-walk-attack.mp4",
+        "sha256": "e2493f1045b8c82026d95bc1a38ec21483e0a4711fb1a9dc7b946aee1b855016",
+        "bytes": 1864810
+      },
+      "mobile-viewport.png": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38125927885-a1-37d729995de4/mobile-viewport.png",
+        "sha256": "9e23ab87e623cb0438d9fb4083c0303baf5504e2dc810f2e72366dbf349ee5c5",
+        "bytes": 171825
+      },
+      "report.json": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38125927885-a1-37d729995de4/report.json",
+        "sha256": "5b18b9138b9fb92bacdda3750479235075757e72b4e0f6f5142fae879b3c2836",
+        "bytes": 10310
+      },
+      "walk-attack.mp4": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38125927885-a1-37d729995de4/walk-attack.mp4",
+        "sha256": "31e9327dfb958d73ff0ec44cd67dc21f306aceed9a024dbc99bee28cee2b2de1",
+        "bytes": 507819
+      }
+    },
+    "model_hashes": {},
+    "model_run_id": 38124834238,
+    "capture": {
+      "fps": 24,
+      "battleSeconds": 20,
+      "animationSeconds": 6.2,
+      "method": "Each PNG is rendered by the published WebGL scene after advancing the actual unchanged game simulation. No interpolation, pose substitution or realtime-video speed-up.",
+      "contactEvents": 26,
+      "simulationSeconds": 19.033333333333534
+    },
+    "errors": [],
+    "anonymous_checks": {
+      "Attack.png": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:50:19.023152+00:00"
+      },
+      "Battle.png": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:50:19.273466+00:00"
+      },
+      "Death.png": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:50:19.547510+00:00"
+      },
+      "Hit.png": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:50:19.813504+00:00"
+      },
+      "Idle.png": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:50:20.085067+00:00"
+      },
+      "Walk.png": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:50:20.357361+00:00"
+      },
+      "battle.mp4": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:50:20.612877+00:00"
+      },
+      "desktop-diagnostics.png": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:50:20.894915+00:00"
+      },
+      "known-issues.md": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:50:21.162416+00:00"
+      },
+      "live-battle.mp4": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:50:21.421449+00:00"
+      },
+      "live-walk-attack.mp4": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:50:21.683895+00:00"
+      },
+      "mobile-viewport.png": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:50:21.928748+00:00"
+      },
+      "report.json": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:50:22.183890+00:00"
+      },
+      "walk-attack.mp4": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:50:22.468691+00:00"
+      }
+    }
+  },
+  "related_model_build": {
+    "schema_version": 1,
+    "kind": "models",
+    "run_id": 38124834238,
+    "run_attempt": 1,
+    "commit_sha": "da61bd781120804faf3519caa58a2b6699ea4df4",
+    "workflow": "Bastion Blender asset pipeline",
+    "publication_commit": "6a6df73d630d83465903c146f0ac579fbe126275",
+    "tag_target_role": "publication snapshot; tested source is commit_sha",
+    "tested_source_archive_url": "https://github.com/texas359-art/living-siege-qa/archive/da61bd781120804faf3519caa58a2b6699ea4df4.tar.gz",
+    "created_at": "2026-10-11T08:26:57Z",
+    "completed_at": "2026-10-11T08:30:41Z",
+    "status": "success",
+    "qa_result": "PASS",
+    "art_status": "PENDING_USER_REVIEW",
+    "release_tag": "qa-38124834238-a1-da61bd781120",
+    "release_url": "https://github.com/texas359-art/living-siege-qa/releases/tag/qa-38124834238-a1-da61bd781120",
+    "actions_url": "https://github.com/texas359-art/living-siege-qa/actions/runs/38124834238",
+    "scene_url": "https://living-siege.starmedved.chatgpt.site/bastion-test?v=9",
+    "site_source_commit": "b840fed8cb6bf0eee8ba648db8d7fab45d233eca",
+    "site_version": 9,
+    "scene_is_mutable": true,
+    "artifact_provenance": [
+      {
+        "id": 11696349617,
+        "name": "bastion-blender-models",
+        "digest": "sha256:38b1877b059c710d3f70ca8dc9d4905a8e028e6f7726c0ba4dfa25fe20287b2e"
+      }
+    ],
+    "assets": {
+      "create_bastion.py": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/create_bastion.py",
+        "sha256": "4aae525dbe8b28e213e4c6e7d0fc77c8641c19d0424158e0651a01215e363c8c",
+        "bytes": 22999
+      },
+      "design-variants.png": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/design-variants.png",
+        "sha256": "3741b07f4efc5d88d2e87890fb6430c5f0cca041130f59a4a2dc96c2ea790371",
+        "bytes": 552610
+      },
+      "forge-webgl-front.png": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/forge-webgl-front.png",
+        "sha256": "96f6ddd3186789fb2a0e69f2c01e46d9fe4f0ef47f44369f1004b05ab95e6b5b",
+        "bytes": 222445
+      },
+      "forge-webgl-game.png": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/forge-webgl-game.png",
+        "sha256": "40a689949e6601402cd5018b777196cbf4c476962879858af4b1c45a2aa62d6a",
+        "bytes": 189787
+      },
+      "forge-webgl-side.png": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/forge-webgl-side.png",
+        "sha256": "f65e7cd8a4433186dc1be63ca89a8f823c8c162c430799ec8dbb021f3a0cb5f0",
+        "bytes": 100420
+      },
+      "forge.blend": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/forge.blend",
+        "sha256": "56c9261c8d9ed67a8c12a4eced8969a966344da5497ee6015d41955ad6256814",
+        "bytes": 6539668
+      },
+      "forge.glb": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/forge.glb",
+        "sha256": "6ddc1af1287642c763d9feeee64514956fdf1f6d5ba49294b366dde32b6b7e0f",
+        "bytes": 1633144
+      },
+      "known-issues.md": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/known-issues.md",
+        "sha256": "0a581357f4ca657e4f892ce7d1003f5163328bb62cb0a2b67ae3882b68b15300",
+        "bytes": 2463
+      },
+      "manifest.json": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/manifest.json",
+        "sha256": "d307abebe3a1b6b0c31ca04c0b76117e1179d2ef9a789b8451a9f070b984c31a",
+        "bytes": 773
+      },
+      "raider.blend": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/raider.blend",
+        "sha256": "f155580df109dccfcb65beba5377cc3dbb89d57334bdd6e1c9db032ae6def090",
+        "bytes": 6028584
+      },
+      "raider.glb": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/raider.glb",
+        "sha256": "12c5547b3e55d7e750af8461f1591bfc1f449b027e14d4cefd20c8690a755b39",
+        "bytes": 1206576
+      },
+      "sentinel-webgl-front.png": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/sentinel-webgl-front.png",
+        "sha256": "90b26c04a12e005382ea84933a21296d451a8e74c71393e40bf6fff876fc39b5",
+        "bytes": 227367
+      },
+      "sentinel-webgl-game.png": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/sentinel-webgl-game.png",
+        "sha256": "84fe4407a0738fb715e631fdf5118385ad3fd4af6ab093f9962d0243ec666b42",
+        "bytes": 189983
+      },
+      "sentinel-webgl-side.png": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/sentinel-webgl-side.png",
+        "sha256": "f91e3b9642f78744882ae4ba13d8924abd8caca169fde479518002c4ece413fb",
+        "bytes": 102779
+      },
+      "sentinel.blend": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/sentinel.blend",
+        "sha256": "b90488cc6f326a263b95f38eb006c7d11d166726ed7284625c4b6ffe1be33f06",
+        "bytes": 6377572
+      },
+      "sentinel.glb": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/sentinel.glb",
+        "sha256": "3cfa4cbe6c005a8ef05bfdd2906c1b40f2956706492c34437b1ad8eb759ab909",
+        "bytes": 1458388
+      },
+      "tower-Attack.png": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/tower-Attack.png",
+        "sha256": "c65944d997658e3282beb239ec09158a76b60f74c27d920cc7a494bf5df37bd2",
+        "bytes": 198694
+      },
+      "tower-Death.png": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/tower-Death.png",
+        "sha256": "00a4676e6a924a7b3a0033e9f32a272bfae8149706fe78725c3f40725289643d",
+        "bytes": 93019
+      },
+      "tower-Hit.png": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/tower-Hit.png",
+        "sha256": "cac994acd53790b42d39d8c312eb0f65360f9346e6d57cec9e3856b11fe9b300",
+        "bytes": 183391
+      },
+      "tower-Idle.png": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/tower-Idle.png",
+        "sha256": "ddbf7af5777a882e465fe8dde12a259aaceb6b646bd3b92bcff8bb953b572ad9",
+        "bytes": 186049
+      },
+      "tower-Walk.png": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/tower-Walk.png",
+        "sha256": "077d634d10e26d7c05b8127294dd966bb5c3c23f2a391b8d94f789e81705878e",
+        "bytes": 185508
+      },
+      "tower-webgl-front.png": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/tower-webgl-front.png",
+        "sha256": "203cd76cd2178cae8e49c57571960e170782aaee7afd745a786d60e7da50a85d",
+        "bytes": 224782
+      },
+      "tower-webgl-game.png": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/tower-webgl-game.png",
+        "sha256": "effd6ed51a15a8fc21d8d6dc8ae87283cc49fa83a0c455e33f945b3048d5b799",
+        "bytes": 189550
+      },
+      "tower-webgl-side.png": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/tower-webgl-side.png",
+        "sha256": "6b18fa8f56d3d82fd77098da4f82a3701453ced2b215d28632f5400368aebf0a",
+        "bytes": 103643
+      },
+      "tower.blend": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/tower.blend",
+        "sha256": "797ac12512d4eda8fa8cb0e8a49c22168bd427722461b004eaba783a0fa913f3",
+        "bytes": 6137660
+      },
+      "tower.glb": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/tower.glb",
+        "sha256": "66e1844002136959f939e71e45debc931190a7d1fb410ab52430aa48860035f0",
+        "bytes": 1537780
+      },
+      "webgl-report.json": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38124834238-a1-da61bd781120/webgl-report.json",
+        "sha256": "544dfbce1ae122fc40af56dfd465a2d42d700e0660b6cc2ac5cd090902e90130",
+        "bytes": 4951
+      }
+    },
+    "model_hashes": {
+      "forge": "6ddc1af1287642c763d9feeee64514956fdf1f6d5ba49294b366dde32b6b7e0f",
+      "raider": "12c5547b3e55d7e750af8461f1591bfc1f449b027e14d4cefd20c8690a755b39",
+      "sentinel": "3cfa4cbe6c005a8ef05bfdd2906c1b40f2956706492c34437b1ad8eb759ab909",
+      "tower": "66e1844002136959f939e71e45debc931190a7d1fb410ab52430aa48860035f0"
+    },
+    "model_run_id": 38124834238,
+    "capture": null,
+    "errors": [],
+    "anonymous_checks": {
+      "create_bastion.py": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:49:46.467405+00:00"
+      },
+      "design-variants.png": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:49:46.724841+00:00"
+      },
+      "forge-webgl-front.png": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:49:46.991517+00:00"
+      },
+      "forge-webgl-game.png": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:49:47.229707+00:00"
+      },
+      "forge-webgl-side.png": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:49:47.475867+00:00"
+      },
+      "forge.blend": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:49:47.756741+00:00"
+      },
+      "forge.glb": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:49:48.060685+00:00"
+      },
+      "known-issues.md": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:49:48.293810+00:00"
+      },
+      "manifest.json": {
+        "status": 206,
+        "first_bytes": 773,
+        "checked_at": "2026-10-11T10:49:48.535410+00:00"
+      },
+      "raider.blend": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:49:48.781531+00:00"
+      },
+      "raider.glb": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:49:49.129863+00:00"
+      },
+      "sentinel-webgl-front.png": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:49:49.363108+00:00"
+      },
+      "sentinel-webgl-game.png": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:49:49.614003+00:00"
+      },
+      "sentinel-webgl-side.png": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:49:49.841198+00:00"
+      },
+      "sentinel.blend": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:49:50.117694+00:00"
+      },
+      "sentinel.glb": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:49:50.396862+00:00"
+      },
+      "tower-Attack.png": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:49:50.645130+00:00"
+      },
+      "tower-Death.png": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:49:50.878575+00:00"
+      },
+      "tower-Hit.png": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:49:51.136975+00:00"
+      },
+      "tower-Idle.png": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:49:51.368422+00:00"
+      },
+      "tower-Walk.png": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:49:51.623135+00:00"
+      },
+      "tower-webgl-front.png": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:49:51.855133+00:00"
+      },
+      "tower-webgl-game.png": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:49:52.070822+00:00"
+      },
+      "tower-webgl-side.png": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:49:52.303372+00:00"
+      },
+      "tower.blend": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:49:52.679403+00:00"
+      },
+      "tower.glb": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:49:52.947792+00:00"
+      },
+      "webgl-report.json": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:49:53.193764+00:00"
+      }
+    }
+  },
   "model_hash_match": false,
   "history": [
     {
@@ -62,6 +558,20 @@
       "status": "cancelled",
       "release_url": "https://github.com/texas359-art/living-siege-qa/releases/tag/qa-38133168595-a1-0715ccbd8671",
       "record_url": "https://raw.githubusercontent.com/texas359-art/living-siege-qa/main/qa-results/qa-38133168595-a1-0715ccbd8671.json"
+    },
+    {
+      "run_id": 38125927885,
+      "commit_sha": "37d729995de40556f53ed33a80966b202fd2fa5b",
+      "status": "success",
+      "release_url": "https://github.com/texas359-art/living-siege-qa/releases/tag/qa-38125927885-a1-37d729995de4",
+      "record_url": "https://raw.githubusercontent.com/texas359-art/living-siege-qa/main/qa-results/qa-38125927885-a1-37d729995de4.json"
+    },
+    {
+      "run_id": 38124834238,
+      "commit_sha": "da61bd781120804faf3519caa58a2b6699ea4df4",
+      "status": "success",
+      "release_url": "https://github.com/texas359-art/living-siege-qa/releases/tag/qa-38124834238-a1-da61bd781120",
+      "record_url": "https://raw.githubusercontent.com/texas359-art/living-siege-qa/main/qa-results/qa-38124834238-a1-da61bd781120.json"
     }
   ]
 }
