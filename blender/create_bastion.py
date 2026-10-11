@@ -25,6 +25,7 @@ def mesh(name,verts,faces,mat,bone,bevel=.025):
         if hasattr(mod,'affect'):mod.affect='EDGES'
         bpy.ops.object.modifier_apply(modifier=mod.name)
     for poly in ob.data.polygons:poly.use_smooth=True
+    if hasattr(ob.data,'use_auto_smooth'):ob.data.use_auto_smooth=True;ob.data.auto_smooth_angle=math.radians(55)
     wn=ob.modifiers.new('Plate normals','WEIGHTED_NORMAL');wn.keep_sharp=True;wn.weight=50
     bpy.ops.object.modifier_apply(modifier=wn.name)
     bpy.ops.object.mode_set(mode='EDIT');bpy.ops.mesh.select_all(action='SELECT');bpy.ops.uv.smart_project(angle_limit=1.15,island_margin=.015);bpy.ops.object.mode_set(mode='OBJECT')
@@ -251,7 +252,9 @@ def stage(rig):
     sc=bpy.context.scene;sc.render.engine='CYCLES';sc.cycles.samples=24;sc.cycles.use_denoising=True
     sc.render.resolution_x=sc.render.resolution_y=720;sc.render.resolution_percentage=100
     sc.render.image_settings.file_format='PNG';sc.render.film_transparent=False
-    sc.view_settings.view_transform='Filmic';sc.view_settings.look='Medium High Contrast';sc.view_settings.exposure=.4
+    try:sc.view_settings.view_transform='Filmic';sc.view_settings.look='Medium High Contrast'
+    except TypeError:sc.view_settings.view_transform='Standard'
+    sc.view_settings.exposure=.4
     sc.world.color=(.14,.14,.14)
     bpy.ops.mesh.primitive_plane_add(size=200,location=(0,0,-.012));ground=bpy.context.object;ground.name='RenderGround'
     mat=bpy.data.materials.new('Stage matte');mat.diffuse_color=(.08,.105,.13,1);ground.data.materials.append(mat)
