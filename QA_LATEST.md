@@ -1,6 +1,6 @@
 # Последние результаты QA · Бастион
 
-Обновлено UTC: 2026-10-11T10:51:07.671424+00:00. Художественный статус: **PENDING_USER_REVIEW**.
+Обновлено UTC: 2026-10-11T10:52:31.430840+00:00. Художественный статус: **PENDING_USER_REVIEW**.
 
 [Машиночитаемый индекс](https://raw.githubusercontent.com/texas359-art/living-siege-qa/main/QA_LATEST.json). Прямые ссылки ниже публичны; файлы Release проверены без cookies и Authorization.
 
@@ -27,6 +27,8 @@
 - [Мобильный viewport](https://github.com/texas359-art/living-siege-qa/releases/download/qa-38125927885-a1-37d729995de4/mobile-viewport.png)
 - [Отчёт ошибок и проверки](https://github.com/texas359-art/living-siege-qa/releases/download/qa-38125927885-a1-37d729995de4/report.json)
 - [Известные недостатки](https://github.com/texas359-art/living-siege-qa/releases/download/qa-38125927885-a1-37d729995de4/known-issues.md)
+- GLB Бастиона, реально загруженный в тесте: отсутствует в этом историческом запуске; не подменён новым файлом.
+- GLB противника, реально загруженный в тесте: отсутствует в этом историческом запуске; не подменён новым файлом.
 
 **Важно:** покадровые MP4 сняты из настоящей WebGL-сцены с шагом симуляции; они не подтверждают realtime FPS. Живая запись опубликована отдельно. Технический PASS не является художественным утверждением.
 
