@@ -89,8 +89,21 @@ def publish(run_id):
         (out/'known-issues.md').write_text((ROOT/'publication/KNOWN_ISSUES.md').read_text())
         base=f'https://github.com/{REPO}/releases/download/{tag}/'
         assets={p.name:{'url':base+p.name,'sha256':sha(p),'bytes':p.stat().st_size} for p in sorted(out.iterdir())}
-        record={'schema_version':1,'kind':kind,'run_id':run['id'],'run_attempt':run['run_attempt'],'commit_sha':run['head_sha'],'workflow':run['name'],'publication_commit':publication_commit,'tag_target_role':'publication snapshot; tested source is commit_sha','tested_source_archive_url':f'https://github.com/{REPO}/archive/{run["head_sha"]}.tar.gz','created_at':run['created_at'],'completed_at':run['updated_at'],'status':run['conclusion'],'qa_result':report.get('result'),'art_status':CONFIG['art_status'],'release_tag':tag,'release_url':f'https://github.com/{REPO}/releases/tag/{tag}','actions_url':run['html_url'],'scene_url':report.get('url',CONFIG['scene_url']),'site_source_commit':CONFIG['site_source_commit'],'site_version':CONFIG['site_version'],'scene_is_mutable':True,'artifact_provenance':[{'id':a['id'],'name':a['name'],'digest':a.get('digest')} for a in selected],'assets':assets,'model_hashes':{p.stem.removeprefix('bastion-'):sha(p) for p in out.glob('*.glb')},'model_run_id':CONFIG['model_run_id'] if not report.get('modelFiles') else None,'capture':report.get('frameCapture'),'errors':report.get('errors',[])}
+        record={'schema_version':1,'kind':kind,'run_id':run['id'],'run_attempt':run['run_attempt'],'commit_sha':run['head_sha'],'workflow':run['name'],'publication_created_at':datetime.now(timezone.utc).isoformat(),'publication_commit':publication_commit,'tag_target_role':'publication snapshot; tested source is commit_sha','tested_source_archive_url':f'https://github.com/{REPO}/archive/{run["head_sha"]}.tar.gz','created_at':run['created_at'],'completed_at':run['updated_at'],'status':run['conclusion'],'qa_result':report.get('result'),'art_status':CONFIG['art_status'],'release_tag':tag,'release_url':f'https://github.com/{REPO}/releases/tag/{tag}','actions_url':run['html_url'],'scene_url':report.get('url',CONFIG['scene_url']),'site_source_commit':CONFIG['site_source_commit'],'site_version':CONFIG['site_version'],'scene_is_mutable':True,'artifact_provenance':[{'id':a['id'],'name':a['name'],'digest':a.get('digest')} for a in selected],'assets':assets,'model_hashes':{p.stem.removeprefix('bastion-'):sha(p) for p in out.glob('*.glb')},'model_run_id':CONFIG['model_run_id'] if not report.get('modelFiles') else None,'capture':report.get('frameCapture'),'errors':report.get('errors',[])}
+        # A resumable draft keeps its first manifest; newer code must never rewrite old proof.
+        retained_manifest=None
+        if existing.returncode==0:
+            view=api(f'repos/{REPO}/releases/tags/{tag}')
+            if any(a['name']=='build.json' for a in view['assets']):
+                recovery=temp/'recovery';recovery.mkdir();gh('release','download',tag,'-R',REPO,'-p','build.json','-D',str(recovery))
+                retained_manifest=recovery/'build.json';frozen=json.loads(retained_manifest.read_text())
+                if frozen['run_id']!=run['id'] or frozen['commit_sha']!=run['head_sha']:raise RuntimeError('Draft run identity mismatch')
+                for name,asset in frozen['assets'].items():
+                    if name not in assets or assets[name]['sha256']!=asset['sha256']:raise RuntimeError('Draft payload changed: '+name+'; preserve draft, do not clobber')
+                if set(frozen['assets'])!=set(assets):raise RuntimeError('Draft asset set changed; preserve draft')
+                record=frozen
         write(out/'build.json',record)
+        if retained_manifest:shutil.copyfile(retained_manifest,out/'build.json')
         payload=list(out.iterdir())
         (out/'SHA256SUMS.txt').write_text(''.join(sha(p)+'  '+p.name+'\n' for p in sorted(payload)))
         body=f'''# Bastion QA {run['id']} / attempt {run['run_attempt']}
@@ -108,10 +121,18 @@ Frozen proof is attached to this tag. Older releases/assets are never replaced b
 '''
         notes=temp/'notes.md';notes.write_text(body)
         if existing.returncode!=0:gh('release','create',tag,'-R',REPO,'--target',publication_commit,'--title',f'Bastion QA {run["id"]} · {kind} · {run["conclusion"]}','--notes-file',str(notes),'--draft','--prerelease')
-        uploaded=json.loads(gh('release','view',tag,'-R',REPO,'--json','assets').stdout)['assets']
-        uploaded_names={a['name'] for a in uploaded}
-        for p in out.iterdir():
-            if p.name not in uploaded_names:gh('release','upload',tag,str(p),'-R',REPO) # never --clobber
+        uploaded=api(f'repos/{REPO}/releases/tags/{tag}')['assets']
+        uploaded_map={a['name']:a for a in uploaded}
+        # Manifest first, so interruption before any large upload can resume safely.
+        ordered=[out/'build.json',out/'SHA256SUMS.txt']+[p for p in out.iterdir() if p.name not in ['build.json','SHA256SUMS.txt']]
+        for p in ordered:
+            if p.name in uploaded_map:
+                remote=uploaded_map[p.name]
+                if remote.get('digest')!='sha256:'+sha(p):
+                    verify=temp/('verify-'+p.name);verify_dir=temp/('check-'+p.stem);verify_dir.mkdir(exist_ok=True)
+                    gh('release','download',tag,'-R',REPO,'-p',p.name,'-D',str(verify_dir))
+                    if sha(verify_dir/p.name)!=sha(p):raise RuntimeError('Existing asset mismatch: '+p.name)
+            else:gh('release','upload',tag,str(p),'-R',REPO) # never --clobber
         gh('release','edit',tag,'-R',REPO,'--draft=false')
         checks={name:anonymous(asset['url']) for name,asset in assets.items()}
         anonymous(base+'build.json');anonymous(base+'SHA256SUMS.txt')
