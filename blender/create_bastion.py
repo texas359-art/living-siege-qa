@@ -1,5 +1,5 @@
 """Original Bastion assets. No imported models. Blender 3.x bpy, CPU rendering."""
-import bpy, math, json, random
+import bpy, math, json, random, os
 from mathutils import Vector, Quaternion
 from pathlib import Path
 ROOT=Path('model-results');ROOT.mkdir(exist_ok=True)
@@ -217,7 +217,7 @@ def create_actions(rig,enemy=False):
                 for sign,side in [(-1,'l'),(1,'r')]:
                     s=math.sin(a+(0 if side=='l' else math.pi));lift=max(0,s)
                     rot('thigh'+side,.30*s);rot('shin'+side,-.36*lift);rot('foot'+side,.12*lift-.07*s)
-                    rot('upperarm'+side,-.12-.12*s,0,sign*.09);rot('forearm'+side,-.14-.08*lift)
+                    rot('upperarm'+side,-.12-.12*s,0,sign*.09);rot('forearm'+side,-.14-.08*lift);rot('hand'+side,.035*s,0,.018*s)
                 rot('head',-.02,0,.015*math.sin(a))
             elif name=='Attack':
                 # contact is frame 13 at 30 fps: anticipation, thrust, recoil, recover.
@@ -235,8 +235,8 @@ def create_actions(rig,enemy=False):
                 v=math.sin(min(1,t*1.7)*math.pi)*math.exp(-t*.7);root(y=.11*v,z=-.06*v);rot('spine',-.22*v,0,.08*v);rot('head',-.18*v);rot('upperarml',-.13+.25*v);rot('upperarmr',.18*v,0,.16*v);rot('thighr',-.13*v);rot('shinr',-.2*v)
             elif name=='Death':
                 u=max(0,min(1,(t-.08)/.62));u=u*u*(3-2*u)
-                root(y=.40*u,z=-.92*u);rot('pelvis',-1.32*u,0,.15*u);rot('spine',-.20*math.sin(t*math.pi));rot('head',-.20*u)
-                rot('upperarml',-.13-.44*u,0,-.5*u);rot('upperarmr',-.48*u,0,.65*u);rot('forearmr',-.4*u);rot('thighl',.40*u);rot('thighr',.22*u);rot('shinl',-.55*u);rot('shinr',-.35*u)
+                root(y=.25*u,z=.42*u);rot('root',-1.50*u,0,.12*u);rot('pelvis',-.08*math.sin(t*math.pi));rot('spine',-.10*math.sin(t*math.pi));rot('head',-.08*u)
+                rot('upperarml',-.13-.12*u,0,-.32*u);rot('upperarmr',-.12*u,0,.40*u);rot('forearmr',-.18*u);rot('thighl',.12*u);rot('thighr',.08*u);rot('shinl',-.16*u);rot('shinr',-.12*u)
             elif name=='Spawn':
                 v=(1-t)**2;root(z=.20*v);rot('spine',.08*math.sin(t*math.pi));rot('shinl',-.12*math.sin(t*math.pi));rot('shinr',-.12*math.sin(t*math.pi))
             for pb in rig.pose.bones:
@@ -271,16 +271,16 @@ for variant,enemy in [('tower',False),('forge',False),('sentinel',False),('senti
     bpy.ops.object.select_all(action='DESELECT');rig.select_set(True);body.select_set(True);bpy.context.view_layer.objects.active=rig
     glb=ROOT/(name+'.glb')
     bpy.ops.export_scene.gltf(filepath=str(glb),export_format='GLB',use_selection=True,export_animations=True,export_nla_strips=True,export_force_sampling=True,export_frame_range=False,export_skins=True,export_materials='EXPORT')
-    cam=stage(rig)
+    cam=stage(rig);cam.location=(-4,-6,4.8);cam.rotation_euler=(Vector((-.15,0,1.45))-cam.location).to_track_quat('-Z','Y').to_euler()
     # NLA strips off for clean rest-pose review; assets already exported with actions.
     for tr in rig.animation_data.nla_tracks:tr.mute=True
     idle=bpy.data.actions.get('Idle');rig.animation_data.action=idle;sc.frame_set(0)
     bpy.ops.wm.save_as_mainfile(filepath=str(ROOT/(name+'.blend')))
-    if not enemy:
+    if not enemy and os.environ.get('BASTION_CYCLES_REVIEW')=='1':
         for view,pos in [('front',(0,-7,1.5)),('side',(7,0,1.5)),('game',(-4,-6,4.8))]:
             cam.location=pos;cam.rotation_euler=(Vector((-.15,0,1.45))-cam.location).to_track_quat('-Z','Y').to_euler()
             sc.render.filepath=str(ROOT/(name+'-'+view+'.png'));bpy.ops.render.render(write_still=True)
-        manifest['variants'].append({'name':name,'vertices':len(body.data.vertices),'polygons':len(body.data.polygons),'bones':len(rig.data.bones),'file':glb.name})
+    if not enemy:manifest['variants'].append({'name':name,'vertices':len(body.data.vertices),'polygons':len(body.data.polygons),'bones':len(rig.data.bones),'file':glb.name})
     print('EXPORTED',name,glb.stat().st_size,flush=True)
 (ROOT/'manifest.json').write_text(json.dumps(manifest,indent=2))
 print('ORIGINAL_BASTION_VARIANTS_READY',flush=True)
