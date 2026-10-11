@@ -19,3 +19,12 @@ const animation=spawnSync('ffmpeg',['-hide_banner','-y','-i',path.join(output,re
 fs.writeFileSync(path.join(output,'animation-encode.log'),String(animation.stdout??'')+String(animation.stderr??''));assert.equal(animation.status,0);
 report.animationVideo={file:'walk-attack.mp4',start:report.animationVideoStart,end:report.animationVideoEnd};
 fs.writeFileSync(path.join(output,'report.json'),JSON.stringify(report,null,2));
+
+for(const [sequence,file] of [['animation','walk-attack.mp4'],['battle','battle.mp4']]){
+ fs.renameSync(path.join(output,file),path.join(output,'live-'+file));
+ const result=spawnSync('ffmpeg',['-hide_banner','-y','-framerate',String(report.frameCapture.fps),'-i',path.join(output,'frames-'+sequence,'%05d.png'),'-vf','pad=ceil(iw/2)*2:ceil(ih/2)*2','-an','-c:v','libx264','-preset','fast','-crf','19','-pix_fmt','yuv420p','-movflags','+faststart',path.join(output,file)],{encoding:'utf8'});
+ fs.writeFileSync(path.join(output,sequence+'-frame-encode.log'),result.stderr??'');assert.equal(result.status,0);
+}
+report.liveBattleVideo=report.battleVideo;report.battleVideo={file:'battle.mp4',durationSeconds:20,fps:report.frameCapture.fps,method:report.frameCapture.method};
+report.animationVideo={file:'walk-attack.mp4',durationSeconds:6.2,fps:report.frameCapture.fps,method:report.frameCapture.method};
+fs.writeFileSync(path.join(output,'report.json'),JSON.stringify(report,null,2));
