@@ -28,3 +28,8 @@ for(const [sequence,file] of [['animation','walk-attack.mp4'],['battle','battle.
 report.liveBattleVideo=report.battleVideo;report.battleVideo={file:'battle.mp4',durationSeconds:20,fps:report.frameCapture.fps,method:report.frameCapture.method};
 report.animationVideo={file:'walk-attack.mp4',durationSeconds:6.2,fps:report.frameCapture.fps,method:report.frameCapture.method};
 fs.writeFileSync(path.join(output,'report.json'),JSON.stringify(report,null,2));
+
+const states=spawnSync('ffmpeg',['-hide_banner','-y','-framerate',String(report.frameCapture.fps),'-i',path.join(output,'frames-states','%05d.png'),'-vf','pad=ceil(iw/2)*2:ceil(ih/2)*2','-an','-c:v','libx264','-preset','fast','-crf','19','-pix_fmt','yuv420p','-movflags','+faststart',path.join(output,'all-animations.mp4')],{encoding:'utf8'});
+fs.writeFileSync(path.join(output,'states-encode.log'),states.stderr??'');assert.equal(states.status,0);
+report.allAnimationsVideo={file:'all-animations.mp4',fps:report.frameCapture.fps,timeline:report.animationTimeline,method:report.frameCapture.method};
+fs.writeFileSync(path.join(output,'report.json'),JSON.stringify(report,null,2));
