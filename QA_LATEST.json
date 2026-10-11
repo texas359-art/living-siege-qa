@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-10-11T10:47:21.236396+00:00",
+  "latest_attempt": {
+    "schema_version": 1,
+    "kind": "scene",
+    "run_id": 38133168595,
+    "run_attempt": 1,
+    "commit_sha": "0715ccbd8671eb6a13ece65e377cfc922f7193b8",
+    "workflow": "Bastion real WebGL visual QA",
+    "created_at": "2026-10-11T10:46:49Z",
+    "completed_at": "2026-10-11T10:46:52Z",
+    "status": "cancelled",
+    "qa_result": "NO_REPORT",
+    "art_status": "PENDING_USER_REVIEW",
+    "release_tag": "qa-38133168595-a1-0715ccbd8671",
+    "release_url": "https://github.com/texas359-art/living-siege-qa/releases/tag/qa-38133168595-a1-0715ccbd8671",
+    "actions_url": "https://github.com/texas359-art/living-siege-qa/actions/runs/38133168595",
+    "scene_url": "https://living-siege.starmedved.chatgpt.site/bastion-test?v=9",
+    "site_source_commit": "b840fed8cb6bf0eee8ba648db8d7fab45d233eca",
+    "site_version": 9,
+    "scene_is_mutable": true,
+    "artifact_provenance": [],
+    "assets": {
+      "known-issues.md": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38133168595-a1-0715ccbd8671/known-issues.md",
+        "sha256": "0a581357f4ca657e4f892ce7d1003f5163328bb62cb0a2b67ae3882b68b15300",
+        "bytes": 2463
+      },
+      "report.json": {
+        "url": "https://github.com/texas359-art/living-siege-qa/releases/download/qa-38133168595-a1-0715ccbd8671/report.json",
+        "sha256": "9f6a6adc31e58805251898f3f45ecb3bfc35fc1132828ac15d8cbcdc4cb83513",
+        "bytes": 103
+      }
+    },
+    "model_hashes": {},
+    "model_run_id": 38124834238,
+    "capture": null,
+    "errors": [
+      "Run produced no QA report. See exact Actions run."
+    ],
+    "anonymous_checks": {
+      "known-issues.md": {
+        "status": 206,
+        "first_bytes": 1024,
+        "checked_at": "2026-10-11T10:47:20.614739+00:00"
+      },
+      "report.json": {
+        "status": 206,
+        "first_bytes": 103,
+        "checked_at": "2026-10-11T10:47:20.821878+00:00"
+      }
+    }
+  },
+  "latest_successful_scene": null,
+  "related_model_build": null,
+  "model_hash_match": false,
+  "history": [
+    {
+      "run_id": 38133168595,
+      "commit_sha": "0715ccbd8671eb6a13ece65e377cfc922f7193b8",
+      "status": "cancelled",
+      "release_url": "https://github.com/texas359-art/living-siege-qa/releases/tag/qa-38133168595-a1-0715ccbd8671",
+      "record_url": "https://raw.githubusercontent.com/texas359-art/living-siege-qa/main/qa-results/qa-38133168595-a1-0715ccbd8671.json"
+    }
+  ]
+}
